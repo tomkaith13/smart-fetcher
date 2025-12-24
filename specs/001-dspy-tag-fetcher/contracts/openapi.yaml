@@ -1,0 +1,320 @@
+openapi: 3.1.0
+info:
+  title: Smart Tag-Based Resource Fetcher API
+  description: |
+    A FastAPI application that uses DSPy with Ollama for semantic tag-based search
+    across in-memory resources. Supports synonym matching (e.g., "home" finds "house", "residence").
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /search:
+    get:
+      operationId: searchByTag
+      summary: Search resources by semantic tag
+      description: |
+        Accepts a search tag and returns all resources whose tags are semantically
+        related. Uses DSPy + Ollama for synonym/concept matching.
+      tags:
+        - Search
+      parameters:
+        - name: tag
+          in: query
+          required: true
+          description: The tag to search for (e.g., "home", "car", "technology")
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          example: home
+      responses:
+        "200":
+          description: Successful search (may return empty results)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+              examples:
+                with_results:
+                  summary: Search with matching results
+                  value:
+                    results:
+                      - uuid: "550e8400-e29b-41d4-a716-446655440000"
+                        name: "Cozy Family Cottage"
+                        description: "A warm dwelling perfect for families."
+                        search_tag: "home"
+                      - uuid: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                        name: "Modern Apartment Complex"
+                        description: "Urban living at its finest."
+                        search_tag: "residence"
+                    count: 2
+                    query: "house"
+                no_results:
+                  summary: Search with no matches
+                  value:
+                    results: []
+                    count: 0
+                    query: "xyzzy"
+        "400":
+          description: Invalid request (missing or invalid tag)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_tag:
+                  summary: Missing tag parameter
+                  value:
+                    error: "Tag parameter is required"
+                    code: "MISSING_TAG"
+                    query: ""
+                tag_too_long:
+                  summary: Tag exceeds length limit
+                  value:
+                    error: "Tag exceeds maximum length of 100 characters"
+                    code: "TAG_TOO_LONG"
+                    query: "a]very long tag..."
+        "503":
+          description: LLM service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Semantic matching service is unavailable"
+                code: "SERVICE_UNAVAILABLE"
+                query: "home"
+
+  /resources/{uuid}:
+    get:
+      operationId: getResourceByUuid
+      summary: Retrieve a resource by UUID
+      description: Returns a single resource by its unique identifier.
+      tags:
+        - Resources
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          description: The UUID of the resource to retrieve
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "200":
+          description: Resource found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceResponse"
+              example:
+                resource:
+                  uuid: "550e8400-e29b-41d4-a716-446655440000"
+                  name: "Ergonomic Office Chair"
+                  description: "A comfortable chair designed for long work sessions."
+                  search_tag: "work"
+        "400":
+          description: Invalid UUID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Invalid UUID format"
+                code: "INVALID_UUID"
+                query: "not-a-uuid"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Resource not found"
+                code: "RESOURCE_NOT_FOUND"
+                query: "550e8400-e29b-41d4-a716-446655440000"
+
+  /resources:
+    get:
+      operationId: listAllResources
+      summary: List all resources
+      description: Returns all 100 resources in the system.
+      tags:
+        - Resources
+      responses:
+        "200":
+          description: List of all resources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListResponse"
+              example:
+                resources:
+                  - uuid: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "Cozy Family Cottage"
+                    description: "A warm dwelling perfect for families."
+                    search_tag: "home"
+                count: 100
+
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      description: Returns the health status of the API and its dependencies.
+      tags:
+        - System
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: "healthy"
+                ollama: "connected"
+                resources_loaded: 100
+
+components:
+  schemas:
+    Resource:
+      type: object
+      required:
+        - uuid
+        - name
+        - description
+        - search_tag
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the resource
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Human-readable name
+          example: "Ergonomic Office Chair"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: Descriptive text about the resource
+          example: "A comfortable chair designed for long work sessions."
+        search_tag:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Categorization tag for semantic matching
+          example: "work"
+
+    SearchResponse:
+      type: object
+      required:
+        - results
+        - count
+        - query
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+          description: List of matching resources
+        count:
+          type: integer
+          minimum: 0
+          description: Number of results returned
+          example: 5
+        query:
+          type: string
+          description: The original search tag (echoed back)
+          example: "home"
+
+    ResourceResponse:
+      type: object
+      required:
+        - resource
+      properties:
+        resource:
+          $ref: "#/components/schemas/Resource"
+
+    ListResponse:
+      type: object
+      required:
+        - resources
+        - count
+      properties:
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+          description: All resources in the system
+        count:
+          type: integer
+          minimum: 0
+          description: Total number of resources
+          example: 100
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - code
+        - query
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Resource not found"
+        code:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - MISSING_TAG
+            - TAG_TOO_LONG
+            - RESOURCE_NOT_FOUND
+            - INVALID_UUID
+            - SERVICE_UNAVAILABLE
+          example: "RESOURCE_NOT_FOUND"
+        query:
+          type: string
+          description: The input that caused the error
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    HealthResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - healthy
+            - degraded
+            - unhealthy
+          example: "healthy"
+        ollama:
+          type: string
+          enum:
+            - connected
+            - disconnected
+          example: "connected"
+        resources_loaded:
+          type: integer
+          minimum: 0
+          example: 100
+
+tags:
+  - name: Search
+    description: Semantic tag-based search operations
+  - name: Resources
+    description: Resource retrieval operations
+  - name: System
+    description: System health and status operations

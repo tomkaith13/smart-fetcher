@@ -37,3 +37,10 @@ Currently a single-file application with [main.py](main.py) as the entry point.
 ## Python Version
 
 This project requires Python 3.13+ (specified in [.python-version](.python-version) and [pyproject.toml](pyproject.toml)).
+
+## Active Technologies
+- Python 3.13 (specified in .python-version) + FastAPI, DSPy, Ollama (gpt-oss:20b), uvicorn, pydantic (001-dspy-tag-fetcher)
+- In-memory (list/dict of Resource objects, deterministic seed) (001-dspy-tag-fetcher)
+
+## Recent Changes
+- 001-dspy-tag-fetcher: Added Python 3.13 (specified in .python-version) + FastAPI, DSPy, Ollama (gpt-oss:20b), uvicorn, pydantic
