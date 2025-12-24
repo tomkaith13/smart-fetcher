@@ -5,6 +5,15 @@
 **Status**: Draft
 **Input**: User description: "Develop a smart-fetcher application that uses DSPy (served via a FastAPI app) that takes in a search tag and pulls up the corresponding resources by a uuid. Each resource obj has the following: a uuid, a name (String) and description (string) and a search-tag (a human readable string). For now, we are going to randomly generate 100 such resources, stored in-memory, and we want the agent to fetch the corresponding resources as per the matching tag. For ex, tag: home will fetch all resources that are related to home. Look for synonyms. Finally i want this DSPy inference wrapped in a fastapi endpoint for me to call using Postman or cURL."
 
+## Clarifications
+
+### Session 2025-12-24
+
+- Q: Which LLM backend will power DSPy inference? → A: Ollama with gpt-oss:20b (local)
+- Q: What JSON response structure for search results? → A: Wrapped format with metadata: `{"results": [...], "count": N, "query": "tag"}`
+- Q: Should resource generation be deterministic or random? → A: Deterministic with fixed seed (same 100 resources every restart)
+- Q: What format for error responses? → A: Wrapped format: `{"error": "message", "code": "ERROR_CODE", "query": "..."}`
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Search Resources by Tag (Priority: P1)
@@ -66,11 +75,11 @@ As a developer, I want to list all available resources so that I can browse the 
 
 - **FR-001**: System MUST provide an endpoint that accepts a search tag as input and returns matching resources
 - **FR-002**: System MUST perform semantic/synonym matching when searching by tag (e.g., "home" matches "house", "residence")
-- **FR-003**: System MUST return resources as a collection containing uuid, name, description, and search-tag for each match
-- **FR-004**: System MUST generate and maintain 100 resources in memory on startup
+- **FR-003**: System MUST return resources in a wrapped JSON format: `{"results": [{resource}, ...], "count": N, "query": "<searched-tag>"}` where each resource contains uuid, name, description, and search-tag
+- **FR-004**: System MUST generate and maintain 100 resources in memory on startup using a fixed seed for deterministic, reproducible results across restarts
 - **FR-005**: Each resource MUST have a unique identifier (uuid), a name, a description, and a search-tag
 - **FR-006**: System MUST provide an endpoint to retrieve a single resource by its uuid
-- **FR-007**: System MUST return appropriate error responses for invalid requests (missing tag, invalid uuid, etc.)
+- **FR-007**: System MUST return error responses in wrapped JSON format: `{"error": "<message>", "code": "<ERROR_CODE>", "query": "<input>"}` for invalid requests (missing tag, invalid uuid, service unavailable, etc.)
 - **FR-008**: System MUST be callable via standard HTTP clients (Postman, cURL, etc.)
 - **FR-009**: System MUST use AI/ML-based inference for determining semantic similarity between tags
 
@@ -96,5 +105,5 @@ As a developer, I want to list all available resources so that I can browse the 
 - Resources and their tags will cover a variety of common categories to enable meaningful semantic search testing
 - The system operates in a single-instance mode (no horizontal scaling requirements for this version)
 - No authentication or authorization is required for accessing the endpoints
-- The intelligent matching service will have access to an external AI/ML model or service for semantic understanding
+- The intelligent matching service will use Ollama with the gpt-oss:20b model running locally for semantic understanding
 - In-memory storage is acceptable; data persistence across restarts is not required
