@@ -1,21 +1,22 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: N/A → 1.0.0 (initial creation)
+  Version change: 1.0.0 → 1.1.0
 
   Added Principles:
   - I. Code Quality
   - II. Testing Standards
   - III. User Experience Consistency
   - IV. Performance Requirements
+  - V. Documentation Standards (NEW)
 
   Added Sections:
-  - Core Principles (4 principles)
+  - Core Principles (5 principles)
   - Development Workflow
   - Quality Gates
   - Governance
 
-  Removed Sections: None (initial creation)
+  Removed Sections: None
 
   Templates Status:
   - .specify/templates/plan-template.md: ✅ Compatible (Constitution Check section present)
@@ -86,6 +87,17 @@ Code MUST meet defined performance standards appropriate to the use case.
 
 **Rationale**: Predictable performance characteristics enable reliable integration and prevent resource exhaustion.
 
+### V. Documentation Standards
+
+All specification and design documents MUST follow consistent formatting standards.
+
+- **Diagrams**: All flowcharts, sequence diagrams, and architectural diagrams MUST use Mermaid syntax (not ASCII art)
+- **Directory Trees**: File/folder hierarchies MAY use ASCII tree format (e.g., `├──`, `└──`)
+- **Code Examples**: Code snippets MUST include language identifiers in fenced code blocks
+- **Markdown**: All documentation MUST be valid GitHub-flavored Markdown
+
+**Rationale**: Mermaid diagrams render natively in GitHub, IDEs, and documentation tools, providing better maintainability and visual consistency than ASCII art.
+
 ## Development Workflow
 
 All development work MUST follow this workflow:
@@ -130,4 +142,4 @@ This constitution supersedes all other development practices for the smart-fetch
 - Constitution violations MUST be documented and justified if temporarily necessary
 - Regular reviews SHOULD occur to ensure constitution remains relevant
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-24 | **Last Amended**: 2025-12-24
+**Version**: 1.1.0 | **Ratified**: 2025-12-24 | **Last Amended**: 2025-12-24
