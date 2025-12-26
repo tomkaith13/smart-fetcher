@@ -2,6 +2,19 @@
 
 Smart tag-based resource fetcher using DSPy and FastAPI.
 
+## Dataset
+
+The service includes a synthetic test dataset for semantic search testing:
+- **500 resources** with contextually appropriate content
+- **12 tag categories**: home, car, technology, food, health, finance, travel, education, sports, music, fashion, nature
+- **Minimum 40 resources per tag** for comprehensive tag coverage
+- **Deterministic generation** with fixed seed for reproducibility
+- **Tag-specific content generators** for semantic variety (e.g., "home" tags get house-related content)
+
+Dataset generation takes <100ms and produces unique, schema-validated resources on service startup.
+
+For dataset expansion details, see [specs/003-expand-dataset/](specs/003-expand-dataset/).
+
 ## Configuration
 
 ### Environment Variables

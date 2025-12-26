@@ -68,7 +68,7 @@ class TestHealthAPIIntegration:
         assert data["status"] == "healthy"
         assert data["ollama"] == "connected"
         assert "ready" in data["ollama_message"].lower()
-        assert data["resources_loaded"] == 100
+        assert data["resources_loaded"] == 500
 
     def test_health_check_degraded_model_not_running(
         self, client_with_degraded_service: TestClient
@@ -83,7 +83,7 @@ class TestHealthAPIIntegration:
         assert data["ollama"] == "model_not_running"
         assert "not loaded" in data["ollama_message"]
         assert "ollama run" in data["ollama_message"]
-        assert data["resources_loaded"] == 100
+        assert data["resources_loaded"] == 500
 
     def test_health_check_unhealthy_service_down(
         self, client_with_unhealthy_service: TestClient
@@ -97,7 +97,7 @@ class TestHealthAPIIntegration:
         assert data["status"] == "unhealthy"
         assert data["ollama"] == "disconnected"
         assert "not reachable" in data["ollama_message"]
-        assert data["resources_loaded"] == 100
+        assert data["resources_loaded"] == 500
         assert isinstance(data["model_name"], str)
 
     def test_health_check_response_structure(self, client_with_healthy_service: TestClient) -> None:

@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: Smart Fetcher API - Dataset Expansion
+  description: |
+    API contract updates for expanded 500-resource dataset.
+    
+    **Changes from baseline:**
+    - Resource store now contains 500 resources (previously 100)
+    - Each tag guaranteed to have at least 40 entries
+    - Single-tag constraint enforced (no multi-tag resources)
+    - Tag distribution: 12 tags with 40+ entries each
+    
+    **Backward compatibility:**
+    - All endpoint interfaces unchanged
+    - Response schemas unchanged
+    - Only dataset size and distribution differs
+  version: 0.2.0
+  contact:
+    name: Smart Fetcher API
+    url: https://github.com/tomkaith13/smart-fetcher
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /api/resources:
+    get:
+      summary: List all resources
+      description: |
+        Returns all resources from the store. With expanded dataset, this returns 500 resources.
+        
+        **Performance note:** Response size increases from ~30KB to ~150KB with 500 resources.
+      operationId: listResources
+      tags:
+        - resources
+      responses:
+        '200':
+          description: List of all resources
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - results
+                  - count
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Resource'
+                    description: Array of resource objects
+                    minItems: 500
+                    maxItems: 500
+                  count:
+                    type: integer
+                    description: Total number of resources
+                    example: 500
+              examples:
+                expanded_dataset:
+                  summary: Expanded dataset with 500 resources
+                  value:
+                    results:
+                      - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                        name: "Elm Street House"
+                        description: "Located at 742 Elm Street, Springfield. Features innovative solutions."
+                        search_tag: "home"
+                      - uuid: "223e4567-e89b-12d3-a456-426614174001"
+                        name: "Red Sedan"
+                        description: "Acme Corp vehicle with aggregate best-of-breed technology."
+                        search_tag: "car"
+                    count: 500
+
+  /api/resources/{uuid}:
+    get:
+      summary: Get resource by UUID
+      description: Retrieve a specific resource by its UUID. No changes from baseline.
+      operationId: getResourceByUuid
+      tags:
+        - resources
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the resource to retrieve
+      responses:
+        '200':
+          description: Resource found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/search:
+    get:
+      summary: Semantic search for resources
+      description: |
+        Search for resources by tag using semantic matching with DSPy/Ollama.
+        
+        **Dataset expansion impact:**
+        - Larger context sent to LLM (500 resources vs 100)
+        - More results possible per tag (minimum 40 per tag)
+        - Response times may increase slightly (more candidates to evaluate)
+      operationId: semanticSearch
+      tags:
+        - search
+      parameters:
+        - name: tag
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search tag for semantic matching
+          example: "automobile"
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - results
+                  - count
+                  - query
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Resource'
+                    description: Semantically matching resources
+                  count:
+                    type: integer
+                    description: Number of matching resources
+                    example: 42
+                  query:
+                    type: string
+                    description: Original search tag
+                    example: "automobile"
+        '400':
+          description: Invalid search parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Ollama service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tags:
+    get:
+      summary: List available tags
+      description: |
+        Returns all unique tags in the dataset.
+        
+        **Dataset expansion note:** Returns 12 tags (reduced from original 15 to meet 40-per-tag requirement).
+      operationId: listTags
+      tags:
+        - metadata
+      responses:
+        '200':
+          description: List of tags
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - tags
+                  - count
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of unique tag names
+                    minItems: 12
+                    maxItems: 12
+                    example: ["home", "car", "technology", "food", "health", "finance", "travel", "education", "sports", "music", "fashion", "nature"]
+                  count:
+                    type: integer
+                    description: Number of unique tags
+                    example: 12
+
+  /api/health:
+    get:
+      summary: Health check endpoint
+      description: Check API and Ollama service health. No changes from baseline.
+      operationId: healthCheck
+      tags:
+        - system
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - ollama_status
+                  - message
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  ollama_status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  message:
+                    type: string
+                    example: "All systems operational"
+
+components:
+  schemas:
+    Resource:
+      type: object
+      required:
+        - uuid
+        - name
+        - description
+        - search_tag
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          description: Resource title
+          minLength: 1
+          maxLength: 200
+          example: "Elm Street House"
+        description:
+          type: string
+          description: Resource description
+          minLength: 1
+          maxLength: 1000
+          example: "Located at 742 Elm Street, Springfield. Features innovative solutions."
+        search_tag:
+          type: string
+          description: Single categorical tag
+          enum:
+            - home
+            - car
+            - technology
+            - food
+            - health
+            - finance
+            - travel
+            - education
+            - sports
+            - music
+            - fashion
+            - nature
+          example: "home"
+      description: |
+        Searchable resource with single tag categorization.
+        
+        **Dataset expansion constraints:**
+        - Each resource has exactly one tag (single-tag constraint)
+        - Tag must be from predefined 12-tag vocabulary
+        - UUIDs are deterministically generated with seed=42
+
+    Error:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Tag parameter required"
+        code:
+          type: string
+          description: Machine-readable error code
+          example: "MISSING_TAG_PARAMETER"
+        query:
+          type: string
+          description: Original query that caused the error (if applicable)
+          example: ""
+      description: Standard error response format (unchanged from baseline)
+
+tags:
+  - name: resources
+    description: Resource management endpoints
+  - name: search
+    description: Semantic search operations
+  - name: metadata
+    description: Dataset metadata queries
+  - name: system
+    description: System health and status

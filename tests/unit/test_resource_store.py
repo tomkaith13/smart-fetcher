@@ -18,10 +18,10 @@ class TestGenerateResources:
         resources = generate_resources(count=10)
         assert len(resources) == 10
 
-    def test_default_count_is_100(self) -> None:
-        """Test that default count is 100 resources."""
+    def test_default_count_is_500(self) -> None:
+        """Test that default count is 500 resources."""
         resources = generate_resources()
-        assert len(resources) == 100
+        assert len(resources) == 500
 
     def test_resources_are_deterministic(self) -> None:
         """Test that same seed produces same resources."""
@@ -47,9 +47,23 @@ class TestGenerateResources:
 
     def test_resources_have_unique_uuids(self) -> None:
         """Test that all resources have unique UUIDs."""
-        resources = generate_resources(count=100)
+        resources = generate_resources(count=500)
         uuids = [r.uuid for r in resources]
         assert len(uuids) == len(set(uuids))
+
+    def test_tag_distribution_meets_minimum(self) -> None:
+        """Test that each tag has at least 40 entries in 500-resource dataset."""
+        from collections import Counter
+
+        resources = generate_resources(count=500)
+        tag_counts = Counter(r.search_tag for r in resources)
+
+        # Verify each of the 12 used tags has at least 40 entries
+        for tag, count in tag_counts.items():
+            assert count >= 40, f"Tag '{tag}' has only {count} entries, expected ≥40"
+
+        # Verify we're using exactly 12 tags
+        assert len(tag_counts) == 12
 
 
 class TestResourceStore:
@@ -137,6 +151,19 @@ class TestResourceStore:
 
         assert len(resources) == 1
 
+    def test_get_by_tag_returns_matching(self, store: ResourceStore) -> None:
+        """Test get_by_tag returns all resources with specified tag."""
+        resources = store.get_by_tag("home")
+
+        assert len(resources) == 2
+        assert all(r.search_tag == "home" for r in resources)
+
+    def test_get_by_tag_returns_empty_for_nonexistent(self, store: ResourceStore) -> None:
+        """Test get_by_tag returns empty list for non-existent tag."""
+        resources = store.get_by_tag("nonexistent")
+
+        assert resources == []
+
     def test_count_returns_correct_number(self, store: ResourceStore) -> None:
         """Test count returns total number of resources."""
         assert store.count() == 3
@@ -150,11 +177,11 @@ class TestResourceStore:
             assert "uuid" in item
             assert "tag" in item
 
-    def test_default_initialization_generates_100_resources(self) -> None:
-        """Test that initializing without resources generates 100."""
+    def test_default_initialization_generates_500_resources(self) -> None:
+        """Test that initializing without resources generates 500."""
         store = ResourceStore()
 
-        assert store.count() == 100
+        assert store.count() == 500
 
     def test_tags_to_uuids_index_correct(self, store: ResourceStore) -> None:
         """Test that tags are correctly indexed to UUIDs."""
