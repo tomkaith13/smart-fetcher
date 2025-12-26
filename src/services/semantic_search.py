@@ -10,6 +10,10 @@ import dspy
 from src.models.resource import Resource
 from src.services.resource_store import ResourceStore
 
+# Timeout constants for startup health checks (in seconds)
+STARTUP_HTTP_TIMEOUT = 5.0
+STARTUP_PS_TIMEOUT = 5.0
+
 
 class SemanticResourceFinder(dspy.Signature):  # type: ignore[misc]
     """Find resources semantically related to a search tag.
@@ -137,7 +141,7 @@ class SemanticSearchService:
                 ["ollama", "ps"],
                 capture_output=True,
                 text=True,
-                timeout=5.0,
+                timeout=STARTUP_PS_TIMEOUT,
                 check=False,
             )
 
@@ -169,7 +173,7 @@ class SemanticSearchService:
         try:
             import httpx
 
-            response = httpx.get(f"{self.ollama_host}/api/tags", timeout=5.0)
+            response = httpx.get(f"{self.ollama_host}/api/tags", timeout=STARTUP_HTTP_TIMEOUT)
             return response.status_code == 200
         except Exception:
             return False

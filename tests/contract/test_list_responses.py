@@ -14,6 +14,8 @@ class TestListResponseFormat:
         """Create test client."""
         with patch("src.main.SemanticSearchService") as mock_service_class:
             mock_service = MagicMock()
+            mock_service.model = "gpt-oss:20b"
+            mock_service.get_health_status.return_value = ("healthy", "Ready")
             mock_service.check_connection.return_value = True
             mock_service_class.return_value = mock_service
 

@@ -21,6 +21,22 @@ async def lifespan(app: FastAPI) -> Any:
     app.state.resource_store = ResourceStore()
     app.state.semantic_search = SemanticSearchService(resource_store=app.state.resource_store)
 
+    # Compute and cache startup health snapshot (no per-request checks)
+    status, message = app.state.semantic_search.get_health_status()
+    if status == "healthy":
+        ollama = "connected"
+    elif status == "degraded":
+        ollama = "model_not_running"
+    else:
+        ollama = "disconnected"
+    app.state.health_snapshot = {
+        "status": status,
+        "ollama": ollama,
+        "ollama_message": message,
+        "model_name": app.state.semantic_search.model,
+        "resources_loaded": app.state.resource_store.count(),
+    }
+
     yield
 
     # Cleanup on shutdown (if needed)
