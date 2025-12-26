@@ -1783,13 +1783,13 @@ dependencies = [
     { name = "dspy" },
     { name = "faker" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "pydantic" },
     { name = "uvicorn" },
 ]
 
 [package.optional-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -1802,7 +1802,7 @@ requires-dist = [
     { name = "dspy", specifier = ">=2.5.0" },
     { name = "faker", specifier = ">=33.0.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
-    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.0" },
+    { name = "httpx", specifier = ">=0.28.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13.0" },
     { name = "pydantic", specifier = ">=2.10.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.3.0" },

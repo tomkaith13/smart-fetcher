@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Smart Fetcher API (Ollama Health)
+  version: 0.0.1
+paths:
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status determined at service startup.
+      tags: [System]
+      responses:
+        '200':
+          description: Healthy or degraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                healthy:
+                  value:
+                    status: healthy
+                    ollama: connected
+                    ollama_message: "Ollama and model are ready (verified at startup)"
+                    model_name: "gpt-oss:20b"
+                    resources_loaded: 42
+                degraded:
+                  value:
+                    status: degraded
+                    ollama: model_not_running
+                    ollama_message: "Ollama running but model 'gpt-oss:20b' not loaded at startup"
+                    model_name: "gpt-oss:20b"
+                    resources_loaded: 42
+        '503':
+          description: Unhealthy (Ollama unreachable at startup)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                unhealthy:
+                  value:
+                    status: unhealthy
+                    ollama: disconnected
+                    ollama_message: "Ollama service is not reachable"
+                    model_name: "gpt-oss:20b"
+                    resources_loaded: 42
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, ollama, ollama_message, model_name, resources_loaded]
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        ollama:
+          type: string
+          enum: [connected, model_not_running, disconnected]
+        ollama_message:
+          type: string
+        model_name:
+          type: string
+        resources_loaded:
+          type: integer
+          minimum: 0

@@ -3,7 +3,7 @@
 import re
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 
 from src.api.schemas import (
     ErrorResponse,
@@ -155,19 +155,8 @@ async def list_all_resources(request: Request) -> ListResponse:
     summary="Health check endpoint",
     description="Returns the health status of the API and its dependencies.",
 )
-async def health_check(request: Request) -> HealthResponse:
-    """Check the health of the API and its dependencies."""
-    resource_store = request.app.state.resource_store
-    semantic_search = request.app.state.semantic_search
-
-    # Check Ollama connectivity
-    ollama_status = "connected" if semantic_search.check_connection() else "disconnected"
-
-    # Determine overall status
-    status = "healthy" if ollama_status == "connected" else "degraded"
-
-    return HealthResponse(
-        status=status,
-        ollama=ollama_status,
-        resources_loaded=resource_store.count(),
-    )
+async def health_check(request: Request, response: Response) -> HealthResponse:
+    """Return startup-cached health snapshot without live checks."""
+    snapshot = request.app.state.health_snapshot
+    response.status_code = 503 if snapshot["status"] == "unhealthy" else 200
+    return HealthResponse(**snapshot)

@@ -16,6 +16,8 @@ class TestSearchAPIIntegration:
         """Create test client with mocked semantic search."""
         with patch("src.main.SemanticSearchService") as mock_service_class:
             mock_service = MagicMock()
+            mock_service.model = "gpt-oss:20b"
+            mock_service.get_health_status.return_value = ("healthy", "Ready")
             mock_service.find_matching.return_value = [
                 Resource(
                     uuid="550e8400-e29b-41d4-a716-446655440001",
@@ -96,6 +98,8 @@ class TestSearchAPIIntegration:
         """Test searching with no matches returns empty results."""
         with patch("src.main.SemanticSearchService") as mock_service_class:
             mock_service = MagicMock()
+            mock_service.model = "gpt-oss:20b"
+            mock_service.get_health_status.return_value = ("healthy", "Ready")
             mock_service.find_matching.return_value = []
             mock_service.check_connection.return_value = True
             mock_service_class.return_value = mock_service
@@ -115,6 +119,8 @@ class TestSearchAPIIntegration:
         """Test that service unavailability returns 503 error."""
         with patch("src.main.SemanticSearchService") as mock_service_class:
             mock_service = MagicMock()
+            mock_service.model = "gpt-oss:20b"
+            mock_service.get_health_status.return_value = ("healthy", "Ready")
             mock_service.find_matching.side_effect = ConnectionError("Ollama service unavailable")
             mock_service.check_connection.return_value = False
             mock_service_class.return_value = mock_service
