@@ -151,6 +151,19 @@ class TestResourceStore:
 
         assert len(resources) == 1
 
+    def test_get_by_tag_returns_matching(self, store: ResourceStore) -> None:
+        """Test get_by_tag returns all resources with specified tag."""
+        resources = store.get_by_tag("home")
+
+        assert len(resources) == 2
+        assert all(r.search_tag == "home" for r in resources)
+
+    def test_get_by_tag_returns_empty_for_nonexistent(self, store: ResourceStore) -> None:
+        """Test get_by_tag returns empty list for non-existent tag."""
+        resources = store.get_by_tag("nonexistent")
+
+        assert resources == []
+
     def test_count_returns_correct_number(self, store: ResourceStore) -> None:
         """Test count returns total number of resources."""
         assert store.count() == 3

@@ -213,6 +213,18 @@ class ResourceStore:
         """
         return [self._resources[uuid] for uuid in uuids if uuid in self._resources]
 
+    def get_by_tag(self, tag: str) -> list[Resource]:
+        """Retrieve all resources with a specific tag.
+
+        Args:
+            tag: The search tag to filter by.
+
+        Returns:
+            List of Resource objects with the specified tag.
+        """
+        uuids = self._tags_to_uuids.get(tag, set())
+        return [self._resources[uuid] for uuid in uuids]
+
     def count(self) -> int:
         """Get the total number of resources in the store.
 

@@ -6,23 +6,7 @@ import pytest
 
 from src.models.resource import Resource
 from src.services.resource_store import ResourceStore
-from src.services.semantic_search import SemanticResourceFinder, SemanticSearchService
-
-
-class TestSemanticResourceFinder:
-    """Tests for the SemanticResourceFinder DSPy Signature."""
-
-    def test_signature_has_required_fields(self) -> None:
-        """Verify the signature has the expected input and output fields."""
-        # DSPy Signature fields are defined as annotations
-        annotations = SemanticResourceFinder.__annotations__
-
-        # Check input fields
-        assert "search_tag" in annotations
-        assert "resources_context" in annotations
-
-        # Check output field
-        assert "matching_uuids" in annotations
+from src.services.semantic_search import SemanticSearchService
 
 
 class TestSemanticSearchService:
@@ -52,23 +36,20 @@ class TestSemanticSearchService:
         mock_result.stdout = "gpt-oss:20b    abc123    10GB    100%\n"
         mock_subprocess.return_value = mock_result
 
-        # Setup mock to return matching UUIDs
+        # Setup mock to return a matching tag
         mock_finder = MagicMock()
         mock_result = MagicMock()
-        mock_result.matching_uuids = [
-            "550e8400-e29b-41d4-a716-446655440001",
-            "550e8400-e29b-41d4-a716-446655440002",
-        ]
+        mock_result.best_matching_tag = "home"
         mock_finder.return_value = mock_result
         mock_cot.return_value = mock_finder
 
         service = SemanticSearchService(resource_store=mock_resource_store)
-        results = service.find_matching("home")
+        results = service.find_matching("house")
 
-        assert len(results) == 2
+        # Should return all resources with the 'home' tag
+        assert len(results) > 0
         assert all(isinstance(r, Resource) for r in results)
-        assert results[0].uuid == "550e8400-e29b-41d4-a716-446655440001"
-        assert results[1].uuid == "550e8400-e29b-41d4-a716-446655440002"
+        assert all(r.search_tag == "home" for r in results)
 
     @patch("src.services.semantic_search.dspy.LM")
     @patch("src.services.semantic_search.dspy.configure")
@@ -91,7 +72,7 @@ class TestSemanticSearchService:
 
         mock_finder = MagicMock()
         mock_result = MagicMock()
-        mock_result.matching_uuids = []
+        mock_result.best_matching_tag = "nonexistent"
         mock_finder.return_value = mock_result
         mock_cot.return_value = mock_finder
 
@@ -104,7 +85,7 @@ class TestSemanticSearchService:
     @patch("src.services.semantic_search.dspy.configure")
     @patch("src.services.semantic_search.dspy.ChainOfThought")
     @patch("subprocess.run")
-    def test_find_matching_handles_string_response(
+    def test_find_matching_handles_string_with_whitespace(
         self,
         mock_subprocess: MagicMock,
         mock_cot: MagicMock,
@@ -112,7 +93,7 @@ class TestSemanticSearchService:
         mock_lm: MagicMock,
         mock_resource_store: ResourceStore,
     ) -> None:
-        """Test that find_matching handles JSON string responses from LLM."""
+        """Test that find_matching handles tag strings with whitespace."""
         # Mock model running
         mock_result = MagicMock()
         mock_result.returncode = 0
@@ -121,51 +102,17 @@ class TestSemanticSearchService:
 
         mock_finder = MagicMock()
         mock_result = MagicMock()
-        # LLM might return a JSON string instead of a list
-        mock_result.matching_uuids = '["550e8400-e29b-41d4-a716-446655440001"]'
+        # LLM might return a tag with whitespace
+        mock_result.best_matching_tag = "  home  "
         mock_finder.return_value = mock_result
         mock_cot.return_value = mock_finder
 
         service = SemanticSearchService(resource_store=mock_resource_store)
-        results = service.find_matching("home")
+        results = service.find_matching("house")
 
-        assert len(results) == 1
-        assert results[0].uuid == "550e8400-e29b-41d4-a716-446655440001"
-
-    @patch("src.services.semantic_search.dspy.LM")
-    @patch("src.services.semantic_search.dspy.configure")
-    @patch("src.services.semantic_search.dspy.ChainOfThought")
-    @patch("subprocess.run")
-    def test_find_matching_handles_invalid_uuids(
-        self,
-        mock_subprocess: MagicMock,
-        mock_cot: MagicMock,
-        mock_configure: MagicMock,
-        mock_lm: MagicMock,
-        mock_resource_store: ResourceStore,
-    ) -> None:
-        """Test that find_matching ignores invalid UUIDs from LLM."""
-        # Mock model running
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-        mock_result.stdout = "gpt-oss:20b    abc123    10GB    100%\n"
-        mock_subprocess.return_value = mock_result
-
-        mock_finder = MagicMock()
-        mock_result = MagicMock()
-        mock_result.matching_uuids = [
-            "550e8400-e29b-41d4-a716-446655440001",
-            "invalid-uuid-not-in-store",
-        ]
-        mock_finder.return_value = mock_result
-        mock_cot.return_value = mock_finder
-
-        service = SemanticSearchService(resource_store=mock_resource_store)
-        results = service.find_matching("home")
-
-        # Should only return the valid UUID that exists in store
-        assert len(results) == 1
-        assert results[0].uuid == "550e8400-e29b-41d4-a716-446655440001"
+        # Should still find resources with 'home' tag after stripping
+        assert len(results) > 0
+        assert all(r.search_tag == "home" for r in results)
 
     @patch("src.services.semantic_search.dspy.LM")
     @patch("src.services.semantic_search.dspy.configure")

@@ -18,25 +18,6 @@ STARTUP_PS_TIMEOUT = 5.0
 logger = logging.getLogger(__name__)
 
 
-class SemanticResourceFinder(dspy.Signature):  # type: ignore[misc]
-    """Find resources semantically related to a search tag.
-
-    Given a search tag, identify all resources whose tags are semantically
-    related to the search term. Consider synonyms, related concepts, and
-    contextual similarity.
-    """
-
-    search_tag: str = dspy.InputField(
-        desc="The tag to search for (e.g., 'home', 'car', 'technology')"
-    )
-    resources_context: str = dspy.InputField(
-        desc="JSON list of all available resources with their tags"
-    )
-    matching_uuids: list[str] = dspy.OutputField(
-        desc="UUIDs of resources whose tags are semantically related to the search tag"
-    )
-
-
 class SemanticSearchService:
     """Service for semantic tag-based resource search using DSPy and Ollama.
 
@@ -73,11 +54,30 @@ class SemanticSearchService:
         )
         dspy.configure(lm=self.lm)
 
+        # Pre-build the available tags string for efficiency
+        self._available_tags = ", ".join(resource_store.get_unique_tags())
+
+        # Create the signature dynamically with actual tags in the description
+        class SemanticResourceFinder(dspy.Signature):  # type: ignore[misc]
+            """Classify a search tag to the best matching tag in the dataset.
+
+            Given a search tag, identify the single tag from the dataset that is most
+            semantically related. Consider synonyms, related concepts, and contextual
+            similarity.
+            """
+
+            search_tag: str = dspy.InputField(
+                desc="The tag to search for (e.g., 'home', 'car', 'technology')"
+            )
+            available_tags: str = dspy.InputField(
+                desc=f"Available tags in the dataset: {self._available_tags}"
+            )
+            best_matching_tag: str = dspy.OutputField(
+                desc=f"The single tag from this list that best matches the search tag: {self._available_tags}"
+            )
+
         # Create the ChainOfThought module for semantic matching
         self.finder = dspy.ChainOfThought(SemanticResourceFinder)
-
-        # Pre-build the context string for efficiency
-        self._resources_context = json.dumps(resource_store.get_resources_context())
 
     def find_matching(self, search_tag: str) -> list[Resource]:
         """Find resources semantically related to the search tag.
@@ -103,27 +103,20 @@ class SemanticSearchService:
             logger.info(f"Performing semantic search for tag: {search_tag}")
             result = self.finder(
                 search_tag=search_tag,
-                resources_context=self._resources_context,
+                available_tags=self._available_tags,
             )
 
-            # Extract matching UUIDs from the result
-            matching_uuids = result.matching_uuids
-            logger.info(f"Semantic search found {len(matching_uuids)} matching UUIDs")
+            # Extract the best matching tag from the result
+            best_tag = result.best_matching_tag
+            logger.info(f"Classified '{search_tag}' to tag: '{best_tag}'")
 
-            # Handle case where result might be a string representation
-            if isinstance(matching_uuids, str):
-                try:
-                    matching_uuids = json.loads(matching_uuids)
-                except json.JSONDecodeError:
-                    matching_uuids = []
+            # Handle case where result might need cleaning
+            if isinstance(best_tag, str):
+                best_tag = best_tag.strip()
 
-            # Ensure we have a list
-            if not isinstance(matching_uuids, list):
-                matching_uuids = []
-
-            # Look up full resources by returned UUIDs
-            resources = self.resource_store.get_by_uuids(matching_uuids)
-            logger.info(f"Retrieved {len(resources)} resources from store")
+            # Look up all resources with the classified tag
+            resources = self.resource_store.get_by_tag(best_tag)
+            logger.info(f"Retrieved {len(resources)} resources with tag '{best_tag}'")
             return resources
 
         except Exception as e:
