@@ -1,7 +1,19 @@
-.PHONY: start ollama-ps ollama-check
+.PHONY: start ollama-ps ollama-check test test-unit test-integration test-contract
 
 start:
 	uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
+
+test:
+	uv run pytest tests/ -v
+
+test-unit:
+	uv run pytest tests/unit/ -v
+
+test-integration:
+	uv run pytest tests/integration/ -v
+
+test-contract:
+	uv run pytest tests/contract/ -v
 
 ollama-ps:
 	@echo "Listing running Ollama models..."
