@@ -100,6 +100,7 @@ class SemanticSearchService:
             )
 
         try:
+            logger.info(f"Performing semantic search for tag: {search_tag}")
             result = self.finder(
                 search_tag=search_tag,
                 resources_context=self._resources_context,
@@ -107,6 +108,7 @@ class SemanticSearchService:
 
             # Extract matching UUIDs from the result
             matching_uuids = result.matching_uuids
+            logger.info(f"Semantic search found {len(matching_uuids)} matching UUIDs")
 
             # Handle case where result might be a string representation
             if isinstance(matching_uuids, str):
@@ -120,7 +122,9 @@ class SemanticSearchService:
                 matching_uuids = []
 
             # Look up full resources by returned UUIDs
-            return self.resource_store.get_by_uuids(matching_uuids)
+            resources = self.resource_store.get_by_uuids(matching_uuids)
+            logger.info(f"Retrieved {len(resources)} resources from store")
+            return resources
 
         except Exception as e:
             # Check if it's a connection error
