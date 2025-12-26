@@ -88,12 +88,12 @@ class TestListResponseFormat:
             assert isinstance(resource["description"], str)
             assert isinstance(resource["search_tag"], str)
 
-    def test_list_returns_100_resources(self, client: TestClient) -> None:
-        """Verify exactly 100 resources are returned."""
+    def test_list_returns_500_resources(self, client: TestClient) -> None:
+        """Verify exactly 500 resources are returned."""
         response = client.get("/resources")
 
         assert response.status_code == 200
         data = response.json()
 
-        assert data["count"] == 100
-        assert len(data["resources"]) == 100
+        assert data["count"] == 500
+        assert len(data["resources"]) == 500

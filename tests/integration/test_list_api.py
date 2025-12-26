@@ -24,15 +24,15 @@ class TestListAPIIntegration:
             with TestClient(app) as client:
                 yield client
 
-    def test_list_returns_all_100_resources(self, client: TestClient) -> None:
-        """Test that listing returns all 100 resources."""
+    def test_list_returns_all_500_resources(self, client: TestClient) -> None:
+        """Test that listing returns all 500 resources."""
         response = client.get("/resources")
 
         assert response.status_code == 200
         data = response.json()
 
-        assert data["count"] == 100
-        assert len(data["resources"]) == 100
+        assert data["count"] == 500
+        assert len(data["resources"]) == 500
 
     def test_list_resources_are_valid(self, client: TestClient) -> None:
         """Test that all listed resources have valid structure."""

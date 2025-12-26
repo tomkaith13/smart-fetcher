@@ -2,6 +2,7 @@
 
 import random
 import uuid as uuid_lib
+from collections.abc import Callable
 
 from faker import Faker
 
@@ -29,34 +30,118 @@ TAG_CATEGORIES = [
     "art",  # -> creative, design, visual, artistic
 ]
 
+# Type alias for tag-specific content generators
+TagContentGenerator = Callable[[Faker], dict[str, str]]
 
-def generate_resources(count: int = 100) -> list[Resource]:
-    """Generate deterministic resources using Faker with a fixed seed.
+# Tag-specific content generators for contextually appropriate resource data
+TAG_CONTENT_GENERATORS: dict[str, TagContentGenerator] = {
+    "home": lambda fake: {
+        "name": f"{fake.street_name()} {random.choice(['House', 'Residence', 'Property', 'Home', 'Estate'])}",
+        "description": f"Located at {fake.address()}. Features {fake.catch_phrase().lower()}.",
+    },
+    "car": lambda fake: {
+        "name": f"{fake.color()} {random.choice(['Sedan', 'SUV', 'Coupe', 'Truck', 'Hatchback', 'Convertible'])}",
+        "description": f"{fake.company()} vehicle with {fake.bs()} technology. {fake.catch_phrase()}.",
+    },
+    "technology": lambda fake: {
+        "name": f"{random.choice(['Smart', 'Digital', 'Cloud', 'AI', 'IoT', 'Quantum'])} {random.choice(['Device', 'Platform', 'System', 'Solution'])}",
+        "description": f"{fake.company()} technology that {fake.bs()}. {fake.catch_phrase()}.",
+    },
+    "food": lambda fake: {
+        "name": f"{random.choice(['Gourmet', 'Fresh', 'Organic', 'Artisan', 'Delicious'])} {random.choice(['Meal', 'Dish', 'Cuisine', 'Delight', 'Feast'])}",
+        "description": f"{fake.sentence(nb_words=6)} Prepared with {fake.word()} ingredients.",
+    },
+    "health": lambda fake: {
+        "name": f"{random.choice(['Wellness', 'Health', 'Fitness', 'Medical', 'Vitality'])} {random.choice(['Program', 'Service', 'Solution', 'Plan', 'Care'])}",
+        "description": f"Professional {random.choice(['healthcare', 'wellness', 'medical', 'fitness'])} service. {fake.paragraph(nb_sentences=1)}",
+    },
+    "finance": lambda fake: {
+        "name": f"{fake.company()} {random.choice(['Investment', 'Banking', 'Financial', 'Capital', 'Wealth'])} {random.choice(['Services', 'Solutions', 'Management'])}",
+        "description": f"Financial services that {fake.bs()}. Expert {random.choice(['investment', 'banking', 'advisory'])} solutions.",
+    },
+    "travel": lambda fake: {
+        "name": f"{fake.city()} {random.choice(['Journey', 'Adventure', 'Tour', 'Vacation', 'Trip', 'Getaway'])}",
+        "description": f"Explore {fake.country()} with our exclusive travel package. {fake.catch_phrase()}.",
+    },
+    "education": lambda fake: {
+        "name": f"{random.choice(['Academic', 'Professional', 'Advanced', 'Online', 'Executive'])} {random.choice(['Course', 'Program', 'Training', 'Certification', 'Workshop'])}",
+        "description": f"Learn {fake.job().lower()} skills. {fake.sentence(nb_words=8)}",
+    },
+    "sports": lambda fake: {
+        "name": f"{random.choice(['Elite', 'Professional', 'Amateur', 'Competitive', 'Recreational'])} {random.choice(['Athletics', 'Training', 'League', 'Competition', 'Tournament'])}",
+        "description": f"{random.choice(['Athletic', 'Sports', 'Competition', 'Training'])} program. {fake.sentence(nb_words=8)}",
+    },
+    "music": lambda fake: {
+        "name": f"{random.choice(['Live', 'Studio', 'Concert', 'Jazz', 'Rock', 'Classical'])} {random.choice(['Performance', 'Album', 'Concert', 'Collection', 'Experience'])}",
+        "description": f"{random.choice(['Musical', 'Audio', 'Sound'])} entertainment featuring {fake.word()} arrangements. {fake.catch_phrase()}.",
+    },
+    "fashion": lambda fake: {
+        "name": f"{fake.color()} {random.choice(['Designer', 'Casual', 'Formal', 'Trendy', 'Elegant', 'Modern'])} {random.choice(['Collection', 'Apparel', 'Wear', 'Fashion', 'Style'])}",
+        "description": f"Stylish {random.choice(['clothing', 'apparel', 'fashion'])} line. {fake.sentence(nb_words=7)}",
+    },
+    "nature": lambda fake: {
+        "name": f"{random.choice(['Natural', 'Wild', 'Scenic', 'Ecological', 'Green', 'Pristine'])} {random.choice(['Environment', 'Landscape', 'Habitat', 'Reserve', 'Paradise'])}",
+        "description": f"{random.choice(['Natural', 'Outdoor', 'Wildlife', 'Ecological'])} experience. {fake.sentence(nb_words=8)}",
+    },
+}
+
+
+def generate_resources(count: int = 500, seed: int = SEED) -> list[Resource]:
+    """Generate deterministic resources with contextual content per tag.
+
+    Expands dataset from 100 to 500 resources with strict single-tag categorization.
+    For count=500, uses 12 of 15 available tags with minimum 40 entries per tag.
+    For smaller counts, distributes evenly across 12 tags.
 
     Args:
-        count: Number of resources to generate (default 100).
+        count: Number of resources to generate (default 500).
+        seed: Random seed for deterministic generation (default SEED).
 
     Returns:
-        List of Resource objects with realistic names, descriptions, and tags.
+        List of Resource objects with tag-specific contextual content.
     """
     # Set seeds for reproducibility
-    random.seed(SEED)
-    Faker.seed(SEED)
+    random.seed(seed)
+    Faker.seed(seed)
     fake = Faker()
-    fake.seed_instance(SEED)
+    fake.seed_instance(seed)
 
+    # Select 12 tags for consistency
+    selected_tags = TAG_CATEGORIES[:12]
+
+    # Calculate distribution based on count
+    if count >= 480:
+        # For 500+: base 40 per tag, distribute remainder
+        distribution: dict[str, int] = {tag: 40 for tag in selected_tags}
+        remainder = count - (len(selected_tags) * 40)
+        if remainder > 0:
+            for i in range(remainder):
+                tag = selected_tags[i % len(selected_tags)]
+                distribution[tag] += 1
+    else:
+        # For smaller counts: distribute evenly
+        base_per_tag = count // len(selected_tags)
+        remainder = count % len(selected_tags)
+        distribution = {tag: base_per_tag for tag in selected_tags}
+        for i in range(remainder):
+            distribution[selected_tags[i]] += 1
+
+    # Generate resources with tag-specific content
     resources: list[Resource] = []
-    for _ in range(count):
-        # Use seeded random for UUID generation
-        resource_uuid = str(uuid_lib.UUID(int=random.getrandbits(128)))
-        resources.append(
-            Resource(
-                uuid=resource_uuid,
-                name=fake.catch_phrase(),
-                description=fake.paragraph(nb_sentences=2),
-                search_tag=random.choice(TAG_CATEGORIES),
+    for tag, tag_count in distribution.items():
+        generator = TAG_CONTENT_GENERATORS[tag]
+        for _ in range(tag_count):
+            content = generator(fake)
+            resource_uuid = str(uuid_lib.UUID(int=random.getrandbits(128)))
+            resources.append(
+                Resource(
+                    uuid=resource_uuid,
+                    name=content["name"],
+                    description=content["description"],
+                    search_tag=tag,
+                )
             )
-        )
+
     return resources
 
 
@@ -74,7 +159,7 @@ class ResourceStore:
 
         Args:
             resources: List of resources to populate the store. If None,
-                      generates 100 deterministic resources.
+                      generates 500 deterministic resources.
         """
         self._resources: dict[str, Resource] = {}
         self._tags_to_uuids: dict[str, set[str]] = {}
