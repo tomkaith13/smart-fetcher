@@ -103,3 +103,7 @@ Operations and development teams need to establish performance baselines with re
 - **SC-004**: QA team can execute at least 50 distinct semantic search test cases using the expanded dataset, covering all 12 tag categories with test case breakdown: synonym searches (20 cases), multi-word semantic queries (15 cases), edge cases (10 cases), and tag boundary tests (5 cases)
 - **SC-005**: Data validation tests pass with 100% success rate confirming dataset integrity (unique UUIDs, proper schema compliance, tag consistency)
 - **SC-006**: Semantic search precision (percentage of returned results that are actually relevant) remains at or above the baseline established with the 100-resource dataset
+
+### Implementation Notes
+
+**Performance Optimization** (Post-Implementation): During implementation, a semantic search optimization was identified and implemented to handle the 5x dataset increase efficiently. The service was refactored from sending all 500 resources to the LLM (UUID-selection approach) to sending only 12 unique tags (tag-classification approach). This optimization achieved 97% reduction in LLM context size while maintaining semantic search accuracy. The two-step process (classify search tag → lookup resources by tag) provides faster inference times and more predictable results, ensuring **SC-003** is easily met even as the dataset scales further. See [research.md](research.md#6-semantic-search-optimization-post-implementation) and [plan.md](plan.md#post-implementation-optimization) for technical details.

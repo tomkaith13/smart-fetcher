@@ -72,6 +72,21 @@ tests/
 
 **Structure Decision**: Single project structure maintained. All changes confined to existing `src/services/resource_store.py` module (update generation function) and new `src/utils/dataset_validator.py` utility module for validation logic. No architectural changes required - pure data layer enhancement.
 
+**Post-Implementation Optimization**: During implementation, the semantic search was optimized to handle the 5x dataset increase efficiently. The service was refactored from a UUID-selection approach (sending 500 resources to LLM) to a tag-classification approach (sending 12 unique tags to LLM). This optimization achieved:
+- 97% reduction in LLM context size (500 resources → 12 tags)
+- Simpler classification task for improved reliability
+- O(1) resource lookup via pre-built tag index
+- Faster inference with smaller input/output
+- Predictable results (all resources for matched category)
+
+This change required:
+- New `ResourceStore.get_by_tag()` method for efficient tag-based lookup
+- Dynamic `SemanticResourceFinder` signature creation with tags in descriptions
+- Two-step search process: classify tag → lookup resources
+- Test updates to mock `best_matching_tag` instead of `matching_uuids`
+
+See [research.md](research.md#6-semantic-search-optimization-post-implementation) for detailed analysis and implementation.
+
 ## Complexity Tracking
 
 > **No constitution violations - this section left empty per template guidance**

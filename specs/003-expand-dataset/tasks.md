@@ -99,8 +99,16 @@ description: "Implementation tasks for dataset expansion feature"
 - [X] T035 [US2] Review and enhance content generators in src/services/resource_store.py to ensure sufficient semantic variety within each tag (at least 3-4 different patterns per tag)
 - [X] T036 [US2] Test semantic search quality by running sample queries against expanded dataset and verifying synonym matching works correctly
 - [X] T037 [P] [US2] Update integration tests in tests/integration/test_search_api.py to include semantic similarity test cases (e.g., "house" should return "home" tagged resources)
+- [X] T038-OPT [US2] Optimize semantic search for scale: Refactor SemanticSearchService to use tag classification approach instead of UUID selection (classify search tag → best matching tag → O(1) resource lookup via tag index)
+  - Update SemanticResourceFinder signature to take search_tag + available_tags (12 tags) → best_matching_tag
+  - Create signature dynamically with actual tags embedded in field descriptions
+  - Add ResourceStore.get_by_tag() method for O(1) tag-based lookup
+  - Update SemanticSearchService.find_matching() to use two-step process
+  - Update tests in tests/unit/test_semantic_search.py to mock best_matching_tag instead of matching_uuids
+  - Add tests for ResourceStore.get_by_tag() in tests/unit/test_resource_store.py
+  - Benefits: 97% context reduction (500 resources → 12 tags), simpler LLM task, faster inference
 
-**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - dataset has proper size AND semantic quality
+**Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - dataset has proper size AND semantic quality, with optimized semantic search at scale
 
 ---
 

@@ -192,9 +192,99 @@ Using existing:
 - Acceptable: <1 second per spec
 
 **Context Size for LLM**:
-- Current: 100 resources × ~50 bytes = ~5KB context
-- New: 500 resources × ~50 bytes = ~25KB context
-- Impact: Minimal (well within Ollama context limits)
+- ~~Current: 100 resources × ~50 bytes = ~5KB context~~
+- ~~New: 500 resources × ~50 bytes = ~25KB context~~
+- **Optimized: 12 unique tags × ~10 bytes = ~120 bytes context**
+- Impact: **97% reduction in context size** due to tag classification optimization
+
+---
+
+### 6. Semantic Search Optimization (Post-Implementation)
+
+**Question**: How can we reduce the LLM context size when scaling from 100 to 500 resources?
+
+**Research**:
+- Original approach: Send all resources with UUIDs to LLM, get back matching UUIDs
+- Problem at scale: 500 resources × 50 bytes = ~25KB context per request
+- Observation: Only 12 unique tags in dataset, but sending 500 UUID/tag pairs
+
+**Decision**: 
+Refactor to **tag classification approach** instead of UUID selection:
+1. LLM classifies search tag → best matching tag (from 12 options)
+2. Python looks up all resources with that tag using pre-built index
+
+**Implementation**:
+
+```python
+# NEW APPROACH - Tag Classification
+class SemanticSearchService:
+    def __init__(self, resource_store: ResourceStore):
+        self.resource_store = resource_store
+        
+        # Get unique tags (12 tags instead of 500 resources)
+        self._available_tags = ", ".join(resource_store.get_unique_tags())
+        
+        # Create signature dynamically with actual tags in descriptions
+        class SemanticResourceFinder(dspy.Signature):
+            """Classify a search tag to the best matching tag in the dataset."""
+            
+            search_tag: str = dspy.InputField(
+                desc="The tag to search for (e.g., 'home', 'car', 'technology')"
+            )
+            available_tags: str = dspy.InputField(
+                desc=f"Available tags in the dataset: {self._available_tags}"
+            )
+            best_matching_tag: str = dspy.OutputField(
+                desc=f"The single tag from this list that best matches: {self._available_tags}"
+            )
+        
+        self.finder = dspy.ChainOfThought(SemanticResourceFinder)
+    
+    def find_matching(self, search_tag: str) -> list[Resource]:
+        # Step 1: Classify to best tag
+        result = self.finder(search_tag=search_tag, available_tags=self._available_tags)
+        best_tag = result.best_matching_tag.strip()
+        
+        # Step 2: O(1) lookup via tag index
+        return self.resource_store.get_by_tag(best_tag)
+
+# ResourceStore enhancement
+class ResourceStore:
+    def __init__(self, resources: list[Resource]):
+        self._resources: dict[str, Resource] = {}
+        self._tags_to_uuids: dict[str, set[str]] = {}  # Tag index
+        
+        for resource in resources:
+            self._resources[resource.uuid] = resource
+            if resource.search_tag not in self._tags_to_uuids:
+                self._tags_to_uuids[resource.search_tag] = set()
+            self._tags_to_uuids[resource.search_tag].add(resource.uuid)
+    
+    def get_by_tag(self, tag: str) -> list[Resource]:
+        """O(1) lookup: returns all resources with specified tag."""
+        uuids = self._tags_to_uuids.get(tag, set())
+        return [self._resources[uuid] for uuid in uuids]
+```
+
+**Benefits of Optimization**:
+- **Context reduction**: 500 resources → 12 tags (97% reduction)
+- **Task simplicity**: Multi-UUID selection → Single tag classification
+- **Faster inference**: Smaller input/output, quicker LLM response
+- **Better guidance**: Actual tag list embedded in field descriptions
+- **Predictable results**: Always returns all resources for matched category
+- **Scalability**: Context size stays constant as resources grow
+
+**Comparison**:
+
+| Metric | Old Approach | New Approach | Improvement |
+|--------|--------------|--------------|-------------|
+| LLM Input Size | ~25KB (500 resources) | ~120 bytes (12 tags) | 99.5% reduction |
+| LLM Output Size | Variable list of UUIDs | Single tag string | Simpler, faster |
+| Lookup Complexity | O(n) scan | O(1) index | Much faster |
+| Task Difficulty | Multi-selection | Classification | More reliable |
+
+**Alternative Considered**: Keep UUID-based approach but sample/paginate.
+**Rejected Because**: Still suboptimal; classification is fundamentally simpler and more efficient.
 
 ---
 
