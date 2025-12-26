@@ -34,6 +34,21 @@ uv add --dev <package-name>
 
 Currently a single-file application with [main.py](main.py) as the entry point.
 
+## Constitution & Development Standards
+
+**All development work MUST comply with the project constitution** defined in [.specify/memory/constitution.md](.specify/memory/constitution.md).
+
+Key principles to follow:
+1. **Code Quality**: Type annotations required, functions <50 lines, ruff linting, comprehensive docstrings
+2. **Testing Standards**: Comprehensive test coverage, organized in unit/integration/contract directories
+3. **UX Consistency**: Consistent JSON structures, actionable error messages, proper HTTP codes
+
+Quality gates that MUST pass before merge:
+- `uv run pytest` (all tests passing)
+- `uv run ruff check .` (zero errors)
+- `uv run mypy src/` (zero type errors)
+- `uv run ruff format --check .` (zero formatting violations)
+
 ## Python Version
 
 This project requires Python 3.13+ (specified in [.python-version](.python-version) and [pyproject.toml](pyproject.toml)).
