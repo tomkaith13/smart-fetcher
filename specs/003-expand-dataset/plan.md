@@ -17,9 +17,9 @@ Expand the existing test dataset from 100 to 500 resources with strict single-ta
 **Testing**: pytest with unit tests for generation logic and validation functions  
 **Target Platform**: Local development, CI environments (Linux/macOS)
 **Project Type**: Single project (data generation utility within existing service)  
-**Performance Goals**: Generate 500 resources in <1 second, deterministic output with fixed seed  
+**Performance Goals**: Generate 500 resources in <1 second (on MacBook Pro M1 2020 or GitHub Actions ubuntu-latest runner), deterministic output with fixed seed  
 **Constraints**: No new external dependencies, maintain backward compatibility with existing ResourceStore API, single-tag per resource constraint  
-**Scale/Scope**: 500 total resources, 15 existing tag categories (home, car, technology, food, health, finance, travel, education, sports, music, fashion, nature, work, family, art), minimum 40 resources per tag
+**Scale/Scope**: 500 total resources, 12 of 15 existing tag categories used (home, car, technology, food, health, finance, travel, education, sports, music, fashion, nature; excluding work, family, art due to 40-per-tag constraint), minimum 40 resources per tag
 
 ## Constitution Check
 

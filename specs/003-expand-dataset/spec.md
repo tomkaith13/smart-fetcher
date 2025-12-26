@@ -78,14 +78,14 @@ Operations and development teams need to establish performance baselines with re
 ### Functional Requirements
 
 - **FR-001**: Dataset MUST contain exactly 500 resources after expansion
-- **FR-002**: Each existing tag from the original 100-resource dataset (including tags like "home", "car", "technology", "health", "finance") MUST have at least 40 associated resource entries in the expanded dataset, with any remaining resources distributed proportionally across tags
-- **FR-003**: Expanded resources MUST be generated programmatically using synthetic/mock data with titles and descriptions that are varied but contextually appropriate to their assigned tag (e.g., "home" tagged resources contain house-related content with natural variation in wording and specifics)
+- **FR-002**: Each of 12 selected tags from the existing tag vocabulary (specifically: home, car, technology, food, health, finance, travel, education, sports, music, fashion, nature) MUST have at least 40 associated resource entries in the expanded dataset, with any remaining resources (20 total) distributed proportionally based on tag frequency in the original 100-resource baseline
+- **FR-003**: Expanded resources MUST be generated programmatically using synthetic/mock data with titles and descriptions that are varied but contextually appropriate to their assigned tag. Content appropriateness is defined as: (1) using tag-specific Faker method combinations documented in data-model.md, (2) including at least 3 distinct variation patterns per tag, and (3) passing manual review of 5 random samples per tag for semantic relevance to the tag category
 - **FR-004**: All expanded resources MUST follow the same schema and format as the original 100 resources (UUID, title, description, tags)
 - **FR-005**: Each resource MUST have exactly one tag (strict categorization with no multi-tag resources)
 - **FR-006**: Expanded dataset MUST be verifiable through programmatic validation (e.g., automated tests that count resources per tag)
 - **FR-007**: Expanded dataset MUST maintain the semantic relationships and tag meanings from the original dataset
 - **FR-008**: Resource UUIDs in the expanded dataset MUST be unique and not conflict with existing resource identifiers
-- **FR-009**: Tags in expanded resources MUST use existing tag vocabulary from the original dataset (no new tags introduced during expansion)
+- **FR-009**: Tags in expanded resources MUST use 12 selected tags from the existing 15-tag vocabulary (work, family, and art are excluded due to mathematical constraints: 12 tags × 40 minimum = 480, leaving 20 for proportional distribution to reach 500 total)
 
 ### Key Entities
 
@@ -98,8 +98,8 @@ Operations and development teams need to establish performance baselines with re
 ### Measurable Outcomes
 
 - **SC-001**: Resource store contains exactly 500 resources as verified by automated count queries
-- **SC-002**: 100% of tags present in the original dataset have at least 40 associated resources in the expanded dataset
-- **SC-003**: Semantic search queries return results from the expanded dataset within 3 seconds for 95% of queries
-- **SC-004**: QA team can execute at least 50 distinct semantic search test cases using the expanded dataset, covering all major tag categories
+- **SC-002**: 100% of the 12 selected tags have at least 40 associated resources in the expanded dataset (tags: home, car, technology, food, health, finance, travel, education, sports, music, fashion, nature)
+- **SC-003**: Single-term semantic search queries executed sequentially against the full 500-resource dataset return results within 3 seconds for 95% of queries (measured on reference hardware: MacBook Pro M1 2020 or GitHub Actions ubuntu-latest runner)
+- **SC-004**: QA team can execute at least 50 distinct semantic search test cases using the expanded dataset, covering all 12 tag categories with test case breakdown: synonym searches (20 cases), multi-word semantic queries (15 cases), edge cases (10 cases), and tag boundary tests (5 cases)
 - **SC-005**: Data validation tests pass with 100% success rate confirming dataset integrity (unique UUIDs, proper schema compliance, tag consistency)
 - **SC-006**: Semantic search precision (percentage of returned results that are actually relevant) remains at or above the baseline established with the 100-resource dataset
