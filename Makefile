@@ -1,7 +1,12 @@
 .PHONY: start ollama-ps ollama-check test test-unit test-integration test-contract
 
+# Configurable defaults
+LOG_LEVEL ?= info
+HOST ?= 0.0.0.0
+PORT ?= 8000
+
 start:
-	uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
+	uv run uvicorn src.main:app --host $(HOST) --port $(PORT) --log-level $(LOG_LEVEL)
 
 test:
 	uv run pytest tests/ -v

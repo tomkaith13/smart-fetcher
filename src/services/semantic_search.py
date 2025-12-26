@@ -1,6 +1,7 @@
 """Semantic search service using DSPy with Ollama for tag matching."""
 
 import json
+import logging
 import os
 import subprocess
 from typing import Literal
@@ -13,6 +14,8 @@ from src.services.resource_store import ResourceStore
 # Timeout constants for startup health checks (in seconds)
 STARTUP_HTTP_TIMEOUT = 5.0
 STARTUP_PS_TIMEOUT = 5.0
+
+logger = logging.getLogger(__name__)
 
 
 class SemanticResourceFinder(dspy.Signature):  # type: ignore[misc]
@@ -161,7 +164,8 @@ class SemanticSearchService:
             # Check if model appears in the output
             return model_name in output
 
-        except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+        except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
+            logger.warning("ollama ps check failed: %s", str(e))
             return False
 
     def check_connection(self) -> bool:

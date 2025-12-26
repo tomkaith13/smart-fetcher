@@ -2,12 +2,21 @@
 
 from contextlib import asynccontextmanager
 from typing import Any
+import logging
+import os
 
 from fastapi import FastAPI
 
 from src.api.routes import router
 from src.services.resource_store import ResourceStore
 from src.services.semantic_search import SemanticSearchService
+
+# Basic logging configuration; uvicorn can override, but this sets defaults.
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -36,6 +45,14 @@ async def lifespan(app: FastAPI) -> Any:
         "model_name": app.state.semantic_search.model,
         "resources_loaded": app.state.resource_store.count(),
     }
+
+    logger.info(
+        "Startup health: status=%s ollama=%s resources=%d model=%s",
+        app.state.health_snapshot["status"],
+        app.state.health_snapshot["ollama"],
+        app.state.health_snapshot["resources_loaded"],
+        app.state.health_snapshot["model_name"],
+    )
 
     yield
 
