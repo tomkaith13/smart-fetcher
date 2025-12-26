@@ -5,6 +5,16 @@
 **Status**: Draft  
 **Input**: User description: "a project to expand the dataset from 100 to 500. so that we add more data for searching in this initial dataset for this semantic search service. We want to expand the existing tags. We need to ensure that each tag has atleast 40 entries."
 
+## Clarifications
+
+### Session 2025-12-26
+
+- Q: How are existing tags currently distributed in the 100-resource dataset? → A: Multiple distinct tags exist, some with overlap (e.g., "home", "car", "technology", "health", "finance")
+- Q: What is the data source strategy for generating the 400 additional resources? → A: Generate synthetic/mock data programmatically using existing frameworks
+- Q: How should resources be distributed across tags to ensure proper test coverage? → A: Each tag gets exactly 40 entries minimum, remainder distributed proportionally
+- Q: Can resources have multiple tags or must they be single-tagged? → A: Each resource must have exactly one tag (strict categorization)
+- Q: What is the acceptable content diversity level for synthetic data generation? → A: Varied but contextually appropriate (e.g., "home" tags get house-related content with natural variation)
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Comprehensive Tag Coverage Testing (Priority: P1)
@@ -58,27 +68,28 @@ Operations and development teams need to establish performance baselines with re
 ### Edge Cases
 
 - What happens when a tag has exactly 40 entries and no more? (Boundary condition for minimum requirement)
-- What happens when tags are distributed unevenly across the 500 resources? (Some tags might have 100+ entries while others have exactly 40)
+- What happens when tags receive proportionally distributed additional entries beyond the 40 minimum? (Some tags will have more than 40 based on proportional allocation)
 - How does the system handle newly added resources that reference tags from the expanded dataset?
 - What happens when searching for a tag that exists in the expanded data but had no entries in the original 100-resource dataset?
-- How does semantic search perform when resources have multiple overlapping tags from the expanded set?
+- How does the strict single-tag constraint affect semantic search testing compared to multi-tag scenarios?
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
 - **FR-001**: Dataset MUST contain exactly 500 resources after expansion
-- **FR-002**: Each existing tag from the original 100-resource dataset MUST have at least 40 associated resource entries in the expanded dataset
-- **FR-003**: Expanded resources MUST include diverse titles and descriptions to enable meaningful semantic search testing
+- **FR-002**: Each existing tag from the original 100-resource dataset (including tags like "home", "car", "technology", "health", "finance") MUST have at least 40 associated resource entries in the expanded dataset, with any remaining resources distributed proportionally across tags
+- **FR-003**: Expanded resources MUST be generated programmatically using synthetic/mock data with titles and descriptions that are varied but contextually appropriate to their assigned tag (e.g., "home" tagged resources contain house-related content with natural variation in wording and specifics)
 - **FR-004**: All expanded resources MUST follow the same schema and format as the original 100 resources (UUID, title, description, tags)
-- **FR-005**: Expanded dataset MUST be verifiable through programmatic validation (e.g., automated tests that count resources per tag)
-- **FR-006**: Expanded dataset MUST maintain the semantic relationships and tag meanings from the original dataset
-- **FR-007**: Resource UUIDs in the expanded dataset MUST be unique and not conflict with existing resource identifiers
-- **FR-008**: Tags in expanded resources MUST use existing tag vocabulary from the original dataset (no new tags introduced during expansion)
+- **FR-005**: Each resource MUST have exactly one tag (strict categorization with no multi-tag resources)
+- **FR-006**: Expanded dataset MUST be verifiable through programmatic validation (e.g., automated tests that count resources per tag)
+- **FR-007**: Expanded dataset MUST maintain the semantic relationships and tag meanings from the original dataset
+- **FR-008**: Resource UUIDs in the expanded dataset MUST be unique and not conflict with existing resource identifiers
+- **FR-009**: Tags in expanded resources MUST use existing tag vocabulary from the original dataset (no new tags introduced during expansion)
 
 ### Key Entities
 
-- **Resource**: A searchable item containing a UUID, title, description, and one or more tags. Represents the fundamental unit of data in the semantic search system. Each resource must be uniquely identifiable and contain sufficient textual content for semantic matching.
+- **Resource**: A searchable item containing a UUID, title, description, and exactly one tag. Represents the fundamental unit of data in the semantic search system. Each resource must be uniquely identifiable, contain sufficient textual content for semantic matching, and be categorized under a single tag for strict classification testing.
 
 - **Tag**: A categorical label applied to resources to indicate their subject matter, purpose, or characteristics. Tags enable grouping of related resources and serve as the primary dimension for semantic search queries. In the expanded dataset, each tag represents a semantic concept that should have at least 40 associated resources.
 
