@@ -2,6 +2,8 @@
 
 import json
 import os
+import subprocess
+from typing import Literal
 
 import dspy
 
@@ -9,7 +11,7 @@ from src.models.resource import Resource
 from src.services.resource_store import ResourceStore
 
 
-class SemanticResourceFinder(dspy.Signature):
+class SemanticResourceFinder(dspy.Signature):  # type: ignore[misc]
     """Find resources semantically related to a search tag.
 
     Given a search tag, identify all resources whose tags are semantically
@@ -51,8 +53,10 @@ class SemanticSearchService:
         self.resource_store = resource_store
 
         # Configuration from environment or defaults
-        self.ollama_host = ollama_host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
-        self.model = model or os.getenv("OLLAMA_MODEL", "gpt-oss:20b")
+        self.ollama_host: str = (
+            ollama_host if ollama_host else os.getenv("OLLAMA_HOST") or "http://localhost:11434"
+        )
+        self.model: str = model if model else os.getenv("OLLAMA_MODEL") or "gpt-oss:20b"
 
         # Initialize DSPy with Ollama
         self.lm = dspy.LM(
@@ -78,8 +82,16 @@ class SemanticSearchService:
             List of matching Resource objects.
 
         Raises:
-            ConnectionError: If Ollama service is unavailable.
+            ConnectionError: If Ollama service is unavailable or model not running.
         """
+        # Early validation: check if model is available
+        if not self.check_model_running():
+            if not self.check_connection():
+                raise ConnectionError(f"Ollama service is not reachable at {self.ollama_host}")
+            raise ConnectionError(
+                f"Model '{self.model}' is not running. Start it with: ollama run {self.model}"
+            )
+
         try:
             result = self.finder(
                 search_tag=search_tag,
@@ -110,6 +122,44 @@ class SemanticSearchService:
                 raise ConnectionError(f"Ollama service unavailable: {e}") from e
             raise
 
+    def check_model_running(self) -> bool:
+        """Check if the configured model is running via ollama ps.
+
+        Executes 'ollama ps' command to verify the model is loaded and ready
+        to serve inference requests.
+
+        Returns:
+            True if the model is running, False otherwise.
+        """
+        try:
+            # Run 'ollama ps' to list running models
+            result = subprocess.run(
+                ["ollama", "ps"],
+                capture_output=True,
+                text=True,
+                timeout=5.0,
+                check=False,
+            )
+
+            # Check if command succeeded
+            if result.returncode != 0:
+                return False
+
+            # Check if output is available
+            if not result.stdout:
+                return False
+
+            # Parse output to see if our model is listed
+            # Format: NAME        ID        SIZE    PROCESSOR    UNTIL
+            output = result.stdout.lower()
+            model_name = self.model.lower().split(":")[0]  # Extract base name
+
+            # Check if model appears in the output
+            return model_name in output
+
+        except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
+            return False
+
     def check_connection(self) -> bool:
         """Check if Ollama service is reachable.
 
@@ -123,3 +173,26 @@ class SemanticSearchService:
             return response.status_code == 200
         except Exception:
             return False
+
+    def get_health_status(self) -> tuple[Literal["healthy", "degraded", "unhealthy"], str]:
+        """Get comprehensive health status of the semantic search service.
+
+        Checks both Ollama connectivity and whether the required model is running.
+
+        Returns:
+            Tuple of (status, message) where status is 'healthy', 'degraded', or 'unhealthy'
+            and message describes any issues.
+        """
+        # First check if Ollama service is reachable
+        if not self.check_connection():
+            return ("unhealthy", "Ollama service is not reachable")
+
+        # Then check if the specific model is running
+        if not self.check_model_running():
+            return (
+                "degraded",
+                f"Ollama is running but model '{self.model}' is not loaded. "
+                f"Run 'ollama run {self.model}' to start the model.",
+            )
+
+        return ("healthy", "Ollama and model are ready")

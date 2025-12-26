@@ -86,11 +86,16 @@ class HealthResponse(BaseModel):
     """Health check response.
 
     Attributes:
-        status: Overall health status.
-        ollama: Ollama connection status.
+        status: Overall health status ('healthy', 'degraded', or 'unhealthy').
+        ollama: Ollama connection status ('connected', 'model_not_running', 'disconnected').
+        ollama_message: Detailed message about Ollama/model status.
         resources_loaded: Number of resources in memory.
     """
 
     status: str = Field(..., description="Overall health status")
     ollama: str = Field(default="unknown", description="Ollama connection status")
+    ollama_message: str = Field(
+        default="",
+        description="Detailed status message about Ollama and model availability",
+    )
     resources_loaded: int = Field(default=0, ge=0, description="Number of resources loaded")

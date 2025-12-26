@@ -160,14 +160,20 @@ async def health_check(request: Request) -> HealthResponse:
     resource_store = request.app.state.resource_store
     semantic_search = request.app.state.semantic_search
 
-    # Check Ollama connectivity
-    ollama_status = "connected" if semantic_search.check_connection() else "disconnected"
+    # Check Ollama and model status
+    health_status, health_message = semantic_search.get_health_status()
 
-    # Determine overall status
-    status = "healthy" if ollama_status == "connected" else "degraded"
+    # Map internal status to API response format
+    if health_status == "healthy":
+        ollama_status = "connected"
+    elif health_status == "degraded":
+        ollama_status = "model_not_running"
+    else:  # unhealthy
+        ollama_status = "disconnected"
 
     return HealthResponse(
-        status=status,
+        status=health_status,
         ollama=ollama_status,
+        ollama_message=health_message,
         resources_loaded=resource_store.count(),
     )
