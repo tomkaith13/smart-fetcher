@@ -1,6 +1,6 @@
 # Feature Specification: Natural Language UUID Search
 
-**Feature Branch**: `001-nl-uuid-search`  
+**Feature Branch**: `004-nl-uuid-search`  
 **Created**: December 27, 2025  
 **Status**: Draft  
 **Input**: User description: "Implement a new service that takes in natural language query and looks up specific uuids. Refactor existing work as needed but keep the existing functionality intact. For example, if the user searches for \"show me resources that help me improve my hiking habits\", we need to extract the appropriate search tags, run the classifier, and return the results. The results should be in natural language with appropriate resource links for users to click into if needed. Ensure we do not hallucinate resource links. Use the same stack we have for inference if possible."

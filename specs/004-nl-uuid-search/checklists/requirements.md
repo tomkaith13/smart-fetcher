@@ -2,7 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: December 27, 2025
-**Feature**: [specs/001-nl-uuid-search/spec.md](specs/001-nl-uuid-search/spec.md)
+**Feature**: [specs/004-nl-uuid-search/spec.md](specs/004-nl-uuid-search/spec.md)
 
 ## Content Quality
 

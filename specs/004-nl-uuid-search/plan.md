@@ -1,7 +1,7 @@
 # Implementation Plan: Natural Language UUID Search
 
-**Branch**: `001-nl-uuid-search` | **Date**: 2025-12-27 | **Spec**: specs/001-nl-uuid-search/spec.md
-**Input**: Feature specification from `specs/001-nl-uuid-search/spec.md`
+**Branch**: `004-nl-uuid-search` | **Date**: 2025-12-27 | **Spec**: specs/004-nl-uuid-search/spec.md
+**Input**: Feature specification from `specs/004-nl-uuid-search/spec.md`
 
 **Note**: Generated and maintained by the `/speckit.plan` workflow.
 
@@ -38,7 +38,7 @@ Gate Status (post-Phase 1): PASS — Design aligns with Code Quality, Testing St
 ### Documentation (this feature)
 
 ```text
-specs/001-nl-uuid-search/
+specs/004-nl-uuid-search/
 ├── plan.md
 ├── research.md
 ├── data-model.md
