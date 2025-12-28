@@ -1,13 +1,15 @@
 """FastAPI application entry point for smart-fetcher."""
 
-from contextlib import asynccontextmanager
-from typing import Any
 import logging
 import os
+from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI
 
 from src.api.routes import router
+from src.services.nl_search_service import NLSearchService
+from src.services.nl_tag_extractor import NLTagExtractor
 from src.services.resource_store import ResourceStore
 from src.services.semantic_search import SemanticSearchService
 
@@ -17,6 +19,9 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# NL Search Configuration
+NL_SEARCH_DEFAULT_RESULT_CAP = int(os.getenv("NL_SEARCH_RESULT_CAP", "5"))
 
 
 @asynccontextmanager
@@ -29,6 +34,18 @@ async def lifespan(app: FastAPI) -> Any:
     # Initialize on startup
     app.state.resource_store = ResourceStore()
     app.state.semantic_search = SemanticSearchService(resource_store=app.state.resource_store)
+
+    # Initialize NL search services
+    available_tags = app.state.resource_store.get_unique_tags()
+    app.state.nl_tag_extractor = NLTagExtractor(
+        available_tags=available_tags,
+        lm=app.state.semantic_search.lm,
+    )
+    app.state.nl_search_service = NLSearchService(
+        extractor=app.state.nl_tag_extractor,
+        resource_store=app.state.resource_store,
+        default_cap=NL_SEARCH_DEFAULT_RESULT_CAP,
+    )
 
     # Compute and cache startup health snapshot (no per-request checks)
     status, message = app.state.semantic_search.get_health_status()

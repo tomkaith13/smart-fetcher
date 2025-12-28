@@ -9,6 +9,7 @@ from src.api.schemas import (
     ErrorResponse,
     HealthResponse,
     ListResponse,
+    NLSearchResponse,
     ResourceResponse,
     SearchResponse,
 )
@@ -160,3 +161,75 @@ async def health_check(request: Request, response: Response) -> HealthResponse:
     snapshot = request.app.state.health_snapshot
     response.status_code = 503 if snapshot["status"] == "unhealthy" else 200
     return HealthResponse(**snapshot)
+
+
+@router.get(
+    "/nl/search",
+    response_model=NLSearchResponse,
+    responses={
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        503: {"model": ErrorResponse, "description": "Service unavailable"},
+    },
+    tags=["NL Search"],
+    summary="Natural language search for resources",
+    description=(
+        "Accepts a natural language query, extracts relevant domain tags using DSPy + Ollama, "
+        "maps tags to canonical resource UUIDs, and returns verified internal deep links. "
+        "Responses are JSON-wrapped with results/count/query structure."
+    ),
+)
+async def nl_search(
+    request: Request,
+    q: Annotated[
+        str | None,
+        Query(description="Natural language query (e.g., 'show me resources for hiking')"),
+    ] = None,
+) -> NLSearchResponse:
+    """Execute natural language search for resources."""
+    # T014: Validate query presence
+    if q is None or not q.strip():
+        raise HTTPException(
+            status_code=400,
+            detail=ErrorResponse(
+                error="Query parameter 'q' is required",
+                code="MISSING_QUERY",
+                query=q or "",
+            ).model_dump(),
+        )
+
+    query = q.strip()
+
+    # T014: Validate query length
+    if len(query) > 1000:
+        raise HTTPException(
+            status_code=400,
+            detail=ErrorResponse(
+                error="Query exceeds maximum length of 1000 characters",
+                code="QUERY_TOO_LONG",
+                query=query[:50] + "...",
+            ).model_dump(),
+        )
+
+    # T015: Call NLSearchService.search()
+    try:
+        nl_service = request.app.state.nl_search_service
+        resource_items, message, candidate_tags = nl_service.search(query)
+
+        # T016+T040: Assemble NLSearchResponse with JSON wrapping
+        return NLSearchResponse(
+            results=resource_items,
+            count=len(resource_items),
+            query=query,
+            message=message,
+            candidate_tags=candidate_tags,
+        )
+
+    except ConnectionError as e:
+        raise HTTPException(
+            status_code=503,
+            detail=ErrorResponse(
+                error="NL search service is unavailable",
+                code="SERVICE_UNAVAILABLE",
+                query=query,
+            ).model_dump(),
+        ) from e

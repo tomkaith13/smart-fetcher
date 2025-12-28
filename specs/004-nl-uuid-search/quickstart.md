@@ -23,10 +23,36 @@ Expected shape:
 ```json
 {
   "results": [
-    { "uuid": "...", "title": "...", "summary": "...", "link": "/resources/{uuid}" }
+    { 
+      "uuid": "...", 
+      "name": "...", 
+      "summary": "...", 
+      "link": "/resources/{uuid}",
+      "tags": ["sports", "nature"]
+    }
   ],
-  "count": 3,
-  "query": "show me resources that help me improve my hiking habits"
+  "count": 5,
+  "query": "show me resources that help me improve my hiking habits",
+  "message": null,
+  "candidate_tags": []
+}
+```
+
+**No-match scenario:**
+
+```bash
+curl -s "http://localhost:8000/nl/search?q=xyz" | jq
+```
+
+Response:
+
+```json
+{
+  "results": [],
+  "count": 0,
+  "query": "xyz",
+  "message": "No matching resources found. Try searching with tags like: home, car, technology",
+  "candidate_tags": ["home", "car", "technology"]
 }
 ```
 

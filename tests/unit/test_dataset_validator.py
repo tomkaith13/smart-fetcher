@@ -1,6 +1,5 @@
 """Unit tests for dataset validation utilities."""
 
-import pytest
 
 from src.models.resource import Resource
 from src.utils.dataset_validator import (

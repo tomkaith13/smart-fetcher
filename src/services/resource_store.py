@@ -240,3 +240,18 @@ class ResourceStore:
             List of dicts with uuid and tag for each resource.
         """
         return [{"uuid": r.uuid, "tag": r.search_tag} for r in self._resources.values()]
+
+    def get_by_tags(self, tags: list[str]) -> list[Resource]:
+        """Retrieve all resources matching any of the provided tags.
+
+        Args:
+            tags: List of search tags to match.
+
+        Returns:
+            List of Resource objects matching any of the tags (deduplicated).
+        """
+        matched_uuids: set[str] = set()
+        for tag in tags:
+            matched_uuids.update(self._tags_to_uuids.get(tag, set()))
+
+        return [self._resources[uuid] for uuid in matched_uuids]
