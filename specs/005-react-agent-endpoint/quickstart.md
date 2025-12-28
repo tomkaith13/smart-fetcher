@@ -32,7 +32,7 @@ curl -sS -X POST http://localhost:8000/experimental/agent \
 ## Response Shapes
 - Success (no citations): `{ "answer": "...", "query": "...", "meta": {"experimental": true} }`
 - Success (citations): `{ "answer": "...", "query": "...", "citations": [...], "meta": {"experimental": true} }`
-- Error: `{ "error": "...", "code": "UNSAFE_INPUT|RATE_LIMITED|TOOL_TIMEOUT|INTERNAL_ERROR", "query": "..." }`
+- Error: `{ "error": "...", "code": "TOOL_TIMEOUT|INTERNAL_ERROR", "query": "..." }`
 
 ## Notes
 - Default LLM: Ollama model `gpt-oss:20b` via DSPy.

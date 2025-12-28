@@ -26,13 +26,7 @@ paths:
                   - $ref: '#/components/schemas/AgentAnswer'
                   - $ref: '#/components/schemas/AgentAnswerWithCitations'
         "400":
-          description: Unsafe or invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "429":
-          description: Rate limit exceeded
+          description: Invalid input
           content:
             application/json:
               schema:
@@ -105,6 +99,6 @@ components:
           type: string
         code:
           type: string
-          enum: [UNSAFE_INPUT, RATE_LIMITED, TOOL_TIMEOUT, INTERNAL_ERROR]
+          enum: [TOOL_TIMEOUT, INTERNAL_ERROR]
         query:
           type: string

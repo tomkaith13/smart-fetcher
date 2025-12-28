@@ -11,7 +11,6 @@
 
 - Q: Should a step-by-step "tool trace" be optionally included? → A: Never expose tool trace; logs internal only.
 - Q: Should the endpoint always include citations when available? → A: Include citations only on explicit user request.
-- Q: What per-user/request rate limits should apply? → A: 5 requests/min per user.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -63,7 +62,7 @@ If the agent cannot find sufficient information or validation fails, the system 
 - Extremely broad or ambiguous queries where multiple interpretations exist.
 - No relevant search results found within configured limits.
 - Resource validation failures (broken links, unsafe content, or non-authoritative sources).
-- Tool timeouts or rate limits causing partial or delayed results.
+- Tool timeouts causing partial or delayed results.
 - Overly long prompts or repeated requests within a short window.
 
 ## Requirements *(mandatory)*
@@ -73,15 +72,11 @@ If the agent cannot find sufficient information or validation fails, the system 
 - **FR-001**: The system MUST expose an experimental endpoint that accepts a user query and returns the AI agent's final answer.
 - **FR-002**: The agent MUST be able to call the NL search tool to retrieve relevant information supporting the query.
 - **FR-003**: The agent MUST be able to call the resource validator tool to verify resource integrity and suitability before inclusion.
-- **FR-004**: The endpoint MUST return only the agent’s final message content to the user (no internal prompts or hidden tool responses). Tool traces are never exposed; logs are internal only.
+- **FR-004**: The endpoint MUST return only the agent's final message content to the user (no internal prompts or hidden tool responses). Tool traces MUST NOT be exposed in any user-facing response; logs are internal only.
 - **FR-005**: The system MUST indicate experimental status and avoid definitive claims when evidence is insufficient.
-- **FR-006**: The system MUST enforce reasonable rate limits for the experimental endpoint [NEEDS CLARIFICATION: What per-user/request rate limits should apply?].
-- **FR-006**: The system MUST enforce rate limits of 5 requests per minute per user for the experimental endpoint.
-- **FR-007**: The system MUST handle tool failures or timeouts gracefully and return a clear message.
-- **FR-008**: The system MUST sanitize user inputs to prevent unsafe or disallowed content.
-- **FR-009**: The system MUST log agent tool actions and decisions for audit and improvement (not returned to the user).
-
-- **FR-010**: Citations MUST be included only on explicit user request; when included, they MUST pass resource validation.
+- **FR-006**: The system MUST handle tool failures or timeouts gracefully and return a clear message.
+- **FR-007**: The system MUST log agent tool actions and decisions for audit and improvement; tool traces MUST NOT be exposed in any user-facing response.
+- **FR-008**: Citations MUST be included only when the request includes `include_sources=true` parameter; when included, they MUST pass resource validation.
 
 ### Acceptance Criteria per FR
 
@@ -90,13 +85,9 @@ If the agent cannot find sufficient information or validation fails, the system 
 - **FR-003**: When citing resources, only those passing validation appear; invalid resources are excluded.
 - **FR-004**: Default responses contain only the final answer; no internal chain-of-thought or tool outputs are exposed.
 - **FR-005**: In low-evidence cases, response includes a limitation note and avoids definitive statements.
-- **FR-006**: Submitting more than the configured requests per minute returns a rate-limit message.
-- **FR-006**: Submitting more than 5 requests within 60 seconds returns a rate-limit message (e.g., HTTP 429).
-- **FR-007**: If tools time out, user receives a clear message without system errors.
-- **FR-008**: Inputs containing unsafe content are rejected with a user-friendly explanation.
-- **FR-009**: Each agent interaction produces an auditable log of tool calls and decisions (stored internally).
-
-- **FR-010**: When the request includes a citations preference, the response includes only validated citations; otherwise, no citations are returned.
+- **FR-006**: If tools time out, user receives a clear message without system errors.
+- **FR-007**: Each agent interaction produces an auditable log of tool calls and decisions (stored internally); tool traces MUST NOT appear in any user-facing response.
+- **FR-008**: When the request includes `include_sources=true`, the response includes only validated citations; otherwise, no citations are returned.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -117,7 +108,7 @@ If the agent cannot find sufficient information or validation fails, the system 
 
 ### Measurable Outcomes
 
-- **SC-001**: 90% of valid queries return a helpful final answer within 5 seconds.
+- **SC-001**: 90% of valid queries return a final answer within 5 seconds that is helpful (defined as: contains ≥20 words, references at least one search result or query term, and is grammatically coherent).
 - **SC-002**: 95% of cited resources in responses pass validation checks.
 - **SC-003**: User-reported satisfaction (post-response thumbs-up) reaches 70% or higher within the first month.
 - **SC-004**: Fewer than 2% of experimental endpoint requests result in generic error responses.

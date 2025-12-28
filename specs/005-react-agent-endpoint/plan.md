@@ -7,7 +7,7 @@
 
 ## Summary
 
-Expose an experimental API endpoint that runs a single-turn ReACT-style agent which may call existing tools for NL search and resource validation, returning only the final answer. Citations are included only when explicitly requested. Enforce 5 req/min per user, sanitize inputs, and log tool actions internally.
+Expose an experimental API endpoint that runs a single-turn ReACT-style agent which may call existing tools for NL search and resource validation, returning only the final answer. Citations are included only when explicitly requested. Log tool actions internally.
 
 ## Technical Context
 
@@ -23,7 +23,6 @@ Expose an experimental API endpoint that runs a single-turn ReACT-style agent wh
 
 Decisions from Research:
 - LLM/model: DSPy with local Ollama backend using `gpt-oss:20b` by default, pluggable to OpenAI-compatible providers.  
-- Authentication & identity: Per-IP with `X-Forwarded-For` awareness; optional `X-User-Id` header to refine per-user rate limiting.  
 - Logging: Structured JSON-lines file logging for tool actions; in-memory summaries for audit in tests.
 
 ## Constitution Check
@@ -84,12 +83,12 @@ tests/
 - Add `src/services/agent/react_agent.py` implementing a DSPy ReACT-style agent:
     - Wrap existing tools as DSPy `Tool` functions: `nl_search(query)` and `validate_resource(url)`.
     - Compose an agent module that plans, calls tools, and produces a final answer without exposing tool traces.
-- Add experimental route in `src/api/routes.py`: `POST /experimental/agent` with rate limiting (5 req/min per user) and safety checks.
+- Add experimental route in `src/api/routes.py`: `POST /experimental/agent`.
 - Update `src/api/schemas.py` with request/response models aligned to OpenAPI.
 - Implement structured logging of tool actions to JSON lines.
 - Tests:
     - Contract: schema compliance for success and error cases.
-    - Integration: endpoint behavior, rate limiting, citations only on request.
+    - Integration: endpoint behavior, citations only on request.
     - Unit: agent orchestrator logic, tool wrapping and error handling.
 
 ## Complexity Tracking

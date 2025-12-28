@@ -9,7 +9,6 @@
   - `max_tokens: integer` (optional; safety cap)
 - Validation:
   - `text` length 1..4000 (configurable)
-  - `text` must pass safety filters (no harmful content)
 
 ### AgentSession
 - Fields:
