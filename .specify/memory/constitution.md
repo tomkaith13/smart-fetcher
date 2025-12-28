@@ -1,26 +1,27 @@
 <!--
-  Sync Impact Report (v2.0.0 - Simplified Principles)
-  ==================================================
-  Version Change: 1.0.0 → 2.0.0 (MAJOR - Removed principle)
-  Date: 2025-12-26
+  Sync Impact Report (v2.1.0 - Enhanced Testing Standards)
+  ========================================================
+  Version Change: 2.0.0 → 2.1.0 (MINOR - Expanded principle)
+  Date: 2025-12-27
   
   Changes:
-  - REMOVED: Principle IV (Performance Requirements) - entire section removed
-  - MODIFIED: Principle II (Testing Standards) - removed specific 80% coverage threshold
-  - Principles now focus on code quality, testing structure, and UX consistency only
+  - MODIFIED: Principle II (Testing Standards) - added explicit requirement that all new features MUST have corresponding tests
+  - Added mandatory test creation rule: features without tests MUST NOT be merged
+  - Enhanced testing standards to require tests for all code paths, edge cases, and error scenarios
   
-  Remaining Principles:
-  - I. Code Quality: Type safety, clean code, linting standards
-  - II. Testing Standards: Comprehensive test structure (coverage threshold removed)
-  - III. UX Consistency: Error handling, API consistency, actionable feedback
+  Modified Principles:
+  - II. Testing Standards: Now explicitly requires tests for ALL new features before merge
   
   Templates Status:
-  ✅ Templates remain compatible - no structural changes required
-  ✅ CLAUDE.md updated to remove coverage/performance references
+  ✅ plan-template.md - compatible, already includes test planning sections
+  ✅ spec-template.md - compatible, acceptance scenarios map to test requirements
+  ✅ tasks-template.md - compatible, test tasks already standard practice
+  ✅ CLAUDE.md - no update needed, testing already emphasized
   
-  Rationale for MAJOR bump:
-  - Removing an entire principle (Performance Requirements) is backward-incompatible
-  - Projects relying on performance SLAs must now define their own standards
+  Rationale for MINOR bump:
+  - Expanding guidance within existing principle (backward-compatible)
+  - Making implicit requirement explicit (was already practiced, now mandated)
+  - No removal or redefinition of existing principles
   
   Follow-up TODOs:
   - None
@@ -42,7 +43,9 @@
 
 **All code MUST have comprehensive test coverage.** Tests MUST be organized into three directories: `tests/unit/` (isolated logic, mocked dependencies), `tests/integration/` (multi-component interactions, real services), and `tests/contract/` (API endpoint schemas, response formats). External services (LLMs, databases, APIs) MUST be mocked in unit tests to ensure deterministic, fast execution. Integration tests MAY use real services but MUST provide clear setup instructions. Test names MUST follow pattern `test_<behavior>_<condition>` (e.g., `test_search_returns_empty_when_no_matches`). Tests MUST be executable via `pytest` with coverage reporting available.
 
-**Rationale**: Comprehensive testing catches regressions early and documents behavior. Structured test directories make test intent clear (unit=fast/isolated, integration=realistic scenarios, contract=API guarantees). Mocking external dependencies prevents flaky tests and enables CI without external service access. Clear naming makes failures instantly understandable.
+**ALL NEW FEATURES MUST HAVE CORRESPONDING TESTS.** Every new feature, API endpoint, service method, or data model MUST include tests covering: (1) Happy path scenarios with expected inputs, (2) Edge cases (empty inputs, boundary values, special characters), (3) Error scenarios (invalid inputs, missing dependencies, failure modes). Features without tests MUST NOT be merged to main branch. Test creation is NOT optional—it is a mandatory part of feature development. Tests MUST be written during or before implementation (TDD encouraged), not deferred to "later". Code reviews MUST verify test existence and adequacy before approval.
+
+**Rationale**: Comprehensive testing catches regressions early and documents behavior. Structured test directories make test intent clear (unit=fast/isolated, integration=realistic scenarios, contract=API guarantees). Mocking external dependencies prevents flaky tests and enables CI without external service access. Clear naming makes failures instantly understandable. Mandatory feature tests ensure maintainability, prevent technical debt accumulation, and provide executable documentation of expected behavior.
 
 ---
 
@@ -72,4 +75,4 @@
 
 **Compliance Review**: Constitution alignment MUST be verified at three checkpoints: (1) During planning (pre-Phase 0 gate check), (2) After design (post-Phase 1 validation), (3) Before feature merge (final quality gate verification). Projects MAY document persistent deviations in a `EXCEPTIONS.md` file at repository root with per-exception justification and remediation timeline.
 
-**Version**: 2.0.0 | **Ratified**: 2025-12-26 | **Last Amended**: 2025-12-26
+**Version**: 2.1.0 | **Ratified**: 2025-12-26 | **Last Amended**: 2025-12-27

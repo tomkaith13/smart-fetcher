@@ -1,6 +1,5 @@
 """Semantic search service using DSPy with Ollama for tag matching."""
 
-import json
 import logging
 import os
 import subprocess
