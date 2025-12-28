@@ -1,0 +1,110 @@
+openapi: 3.0.3
+info:
+  title: Smart Fetcher Experimental ReACT Agent API
+  version: 0.1.0
+  description: Experimental endpoint to run a ReACT-style agent using NL search and resource validation tools.
+servers:
+  - url: http://localhost:8000
+paths:
+  /experimental/agent:
+    post:
+      summary: Run experimental agent for a single-turn query
+      operationId: runExperimentalAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRequest'
+      responses:
+        "200":
+          description: Final answer produced by agent
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AgentAnswer'
+                  - $ref: '#/components/schemas/AgentAnswerWithCitations'
+        "400":
+          description: Unsafe or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "504":
+          description: Tool timeout or unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    AgentRequest:
+      type: object
+      required: [query]
+      properties:
+        query:
+          type: string
+          description: Natural-language user query
+          minLength: 1
+          maxLength: 4000
+        include_sources:
+          type: boolean
+          default: false
+          description: Whether to include validated citations in the response
+        max_tokens:
+          type: integer
+          minimum: 128
+          maximum: 4096
+          default: 1024
+    AgentAnswer:
+      type: object
+      required: [answer, query, meta]
+      properties:
+        answer:
+          type: string
+        query:
+          type: string
+        meta:
+          type: object
+          properties:
+            experimental:
+              type: boolean
+              default: true
+    AgentAnswerWithCitations:
+      allOf:
+        - $ref: '#/components/schemas/AgentAnswer'
+        - type: object
+          properties:
+            citations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Citation'
+    Citation:
+      type: object
+      required: [title, url]
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        summary:
+          type: string
+    ErrorResponse:
+      type: object
+      required: [error, code, query]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+          enum: [UNSAFE_INPUT, RATE_LIMITED, TOOL_TIMEOUT, INTERNAL_ERROR]
+        query:
+          type: string
