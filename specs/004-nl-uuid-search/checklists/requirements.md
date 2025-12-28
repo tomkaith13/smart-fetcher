@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -24,16 +24,16 @@
 
 ## Feature Readiness
 
-- [ ] All functional requirements have clear acceptance criteria
+- [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover primary flows
 - [ ] Feature meets measurable outcomes defined in Success Criteria
 - [x] No implementation details leak into specification
 
 ## Notes
 
-- Failing items:
-  - "No [NEEDS CLARIFICATION] markers remain" — three clarifications are listed in the spec under "Clarifications Needed".
-  - "All functional requirements have clear acceptance criteria" — acceptance scenarios are provided per user story; requirement-level acceptance criteria can be added if needed.
-  - "Feature meets measurable outcomes defined in Success Criteria" — will be verified post-implementation; included as pending.
+- Updates:
+  - Clarifications section indicates none remaining; checklist updated accordingly.
+  - FR-011 refined to mandate JSON-wrapped API responses with client-side bulleted rendering; acceptance criteria added and tasks mapped (T040–T042).
+  - "Feature meets measurable outcomes defined in Success Criteria" remains pending and will be verified post-implementation.
 
 - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`

@@ -62,17 +62,26 @@ For ambiguous queries, the system identifies top candidate tags or categories an
 
 - **FR-001**: The system MUST accept a natural language query and extract relevant domain tags from it using the existing inference capability (classifier/extractor).
 - **FR-002**: The system MUST map extracted tags to known resource UUIDs using the canonical resource store/dataset.
-- **FR-003**: The system MUST generate a natural language response that includes resource titles, brief summaries, and verified links; links MUST originate from the canonical store and NEVER be fabricated.
-- **FR-003 (updated)**: The system MUST generate a natural language response that includes resource titles, brief summaries, and verified links; links MUST be internal deep links of the form `/resources/{uuid}` derived from the canonical store and NEVER be fabricated.
+- **FR-003**: The system MUST generate a natural language response that includes resource titles, brief summaries, and verified links; links MUST be internal deep links of the form `/resources/{uuid}` derived from the canonical store and NEVER be fabricated.
 - **FR-004**: The system MUST provide a deterministic link verification step that ensures each returned internal deep link maps to an existing UUID in the dataset/store for the associated resource.
 - **FR-005**: The system MUST maintain existing search and list functionality; any refactoring MUST preserve current API responses and behavior.
 - **FR-006**: The system MUST use the same existing inference stack for tag extraction/classification where available; if unavailable, MUST use a safe fallback that still prevents link hallucination.
 - **FR-007**: The system MUST handle no-match queries by returning a helpful NL response with suggested tags and zero links.
-- **FR-008**: The system SHOULD cap results per query to a reasonable default and allow configuration for the cap. [NEEDS CLARIFICATION: default maximum results per query]
-- **FR-008 (updated)**: The system SHOULD cap results per query to 5 by default (configurable) and enforce this cap consistently across NL responses and API outputs.
+- **FR-008**: The system SHOULD cap results per query to 5 by default (configurable) and enforce this cap consistently across NL responses and API outputs.
 - **FR-009**: The system SHOULD support ambiguity handling by returning top candidate tags and prompting refinement.
 - **FR-010**: The system MUST ensure traceability from returned resources back to their UUIDs and tags for auditability.
-- **FR-011**: Responses MUST be presented as a bulleted list where each item contains the resource title (name), a brief summary (description), and an internal deep link of the form `/resources/{uuid}`.
+- **FR-011 (updated)**: API responses MUST be JSON-wrapped per constitution (e.g., {"results": [...], "count": N, "query": "..."}). Each `results` item MUST include:
+  - `uuid`: canonical resource identifier
+  - `name`: resource title
+  - `summary`: brief description (1–2 sentences)
+  - `link`: internal deep link `/resources/{uuid}` derived from the canonical store
+  Clients SHOULD render these items as a bulleted list for readability; server MUST NOT emit raw bullet text—only structured JSON.
+
+  FR-011 Acceptance Criteria:
+  - Responses include only internal deep links of the form `/resources/{uuid}`; all UUIDs resolve in the canonical store.
+  - Each item includes `uuid`, `name`, `summary`, and `link`; optional `tags` MAY be included for traceability.
+  - No fabricated or external URLs appear in any response.
+  - JSON wrapping is consistent: `count == len(results)` and `query` echoes the input.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -98,7 +107,7 @@ For ambiguous queries, the system identifies top candidate tags or categories an
 - A reasonable default cap on results per query is 5 unless otherwise specified. [NEEDS CLARIFICATION: confirm default cap]
 - Default results cap is 5 (configurable) and applied uniformly across responses.
 - Verified links are internal deep links of the form `/resources/{uuid}` generated from the resource store; external links are excluded.
-- The default response format is a bulleted list (title + brief summary + internal deep link).
+- API responses are JSON-wrapped per constitution; clients may render as bulleted lists.
 
 ## Clarifications
 

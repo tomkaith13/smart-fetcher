@@ -38,12 +38,15 @@ Implementation Tasks
 - [ ] T018 [P] [US1] Map extracted tags → UUIDs via `ResourceStore.get_by_tags()` in src/services/nl_search_service.py
 - [ ] T019 [US1] Enforce result cap (default 5; configurable) in src/services/nl_search_service.py
 - [ ] T020 [P] [US1] Verify each link via `link_verifier.resolve('/resources/{uuid}')` in src/services/nl_search_service.py
+- [ ] T040 [P] [US1] Enforce `ResourceItem` fields in schemas and route: `uuid`, `name`, `summary`, `link` (`/resources/{uuid}`); server returns structured JSON only.
 
 Tests (mandatory per spec)
 
 - [ ] T021 [P] [US1] Contract: Add tests/contract/test_nl_search_responses.py
 - [ ] T022 [P] [US1] Integration: Add tests/integration/test_nl_search_api.py
 - [ ] T023 [P] [US1] Unit: Add tests/unit/test_nl_tag_extractor.py
+- [ ] T041 [P] [US1] Contract: Validate JSON wrapping (`results/count/query`), `count == len(results)`, and presence of `uuid`, `name`, `summary`, `link` fields.
+- [ ] T042 [P] [US1] Integration: Assert only internal deep links `/resources/{uuid}` and confirm all returned UUIDs resolve in `ResourceStore`.
 
 ## Phase 4: User Story 2 (P2)
 
@@ -89,6 +92,10 @@ Tests
 - [ ] T037 [P] Add logging and tracing for tag extraction in src/services/nl_search_service.py
 - [ ] T038 [P] Performance: cache available tags and avoid repeated model init in src/services/nl_tag_extractor.py
 - [ ] T039 Ensure zero fabricated links; add omission logging in src/services/nl_search_service.py
+- [ ] T043 [P] [FR-005] Regression: Run existing endpoint tests to verify `/search`, `/resources`, `/list`, `/health` unchanged
+- [ ] T044 [P] [FR-005] Regression: Validate existing API response schemas match pre-feature state
+- [ ] T045 [P] Edge case: Add rate-limiting handling for inference (queue or friendly retry message)
+- [ ] T046 [P] Edge case: Add test coverage for rate-limiting scenario
 
 ## Dependencies
 
