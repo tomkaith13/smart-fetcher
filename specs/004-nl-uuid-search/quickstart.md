@@ -24,9 +24,9 @@ Expected shape:
 {
   "results": [
     { 
-      "uuid": "...", 
-      "name": "...", 
-      "summary": "...", 
+      "uuid": "...",
+      "name": "...",
+      "summary": "...",
       "link": "/resources/{uuid}",
       "tags": ["sports", "nature"]
     }
@@ -34,7 +34,8 @@ Expected shape:
   "count": 5,
   "query": "show me resources that help me improve my hiking habits",
   "message": null,
-  "candidate_tags": []
+  "candidate_tags": [],
+  "reasoning": "The query asks to improve hiking habits, which maps to the hiking tag."
 }
 ```
 
@@ -52,7 +53,8 @@ Response:
   "count": 0,
   "query": "xyz",
   "message": "No matching resources found. Try searching with tags like: home, car, technology",
-  "candidate_tags": ["home", "car", "technology"]
+  "candidate_tags": ["home", "car", "technology"],
+  "reasoning": ""
 }
 ```
 

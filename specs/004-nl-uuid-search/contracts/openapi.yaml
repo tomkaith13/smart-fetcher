@@ -48,7 +48,7 @@ components:
         uuid:
           type: string
           format: uuid
-        title:
+        name:
           type: string
         summary:
           type: string
@@ -56,7 +56,12 @@ components:
           type: string
           description: Internal deep link to the resource
           example: /resources/123e4567-e89b-12d3-a456-426614174000
-      required: [uuid, title, summary, link]
+        tags:
+          type: array
+          items:
+            type: string
+          description: Optional list of associated tags for traceability
+      required: [uuid, name, summary, link]
     NLSearchResponse:
       type: object
       properties:
@@ -69,6 +74,19 @@ components:
           minimum: 0
         query:
           type: string
+        message:
+          type: string
+          nullable: true
+          description: Optional message for no-match or ambiguity scenarios
+        candidate_tags:
+          type: array
+          items:
+            type: string
+          description: Suggested tags for refinement
+        reasoning:
+          type: string
+          description: DSPy extractor explanation of why extracted tags match the query
+          example: "The query asks to improve hiking habits, which maps to the hiking tag."
       required: [results, count, query]
     ErrorResponse:
       type: object

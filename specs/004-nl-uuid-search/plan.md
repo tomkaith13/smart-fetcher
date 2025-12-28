@@ -7,7 +7,7 @@
 
 ## Summary
 
-Enable natural language queries to discover resources by extracting domain tags via the existing inference stack (DSPy + Ollama), mapping tags to canonical resource UUIDs, and returning verified internal deep links of the form `/resources/{uuid}`. Preserve current API behavior, add NL query entrypoint, and enforce a default cap of 5 results with consistent JSON response wrapping.
+Enable natural language queries to discover resources by extracting domain tags via the existing inference stack (DSPy + Ollama), mapping tags to canonical resource UUIDs, and returning verified internal deep links of the form `/resources/{uuid}`. The DSPy extractor's reasoning is returned once at the top level of the response (not duplicated per item) to enhance transparency without redundancy. Preserve current API behavior, add NL query entrypoint, and enforce a default cap of 5 results with consistent JSON response wrapping.
 
 ## Technical Context
 
@@ -27,7 +27,7 @@ Enable natural language queries to discover resources by extracting domain tags 
 
 - Code Quality: Type annotations present; functions <50 lines target; ruff/mypy required. Plan adheres and will enforce in new modules.
 - Testing Standards: Unit/integration/contract tests required; external services mocked in unit. New NL endpoint will include contract + integration tests.
-- UX Consistency: Responses wrapped (`results/count/query`); errors include `error/code/query` with correct HTTP statuses. FR-011 updated to mandate JSON-wrapped responses with client-side bulleted rendering (no raw bullet text from server).
+- UX Consistency: Responses wrapped (`results/count/query`); errors include `error/code/query` with correct HTTP statuses. FR-011 updated to mandate JSON-wrapped responses with client-side bulleted rendering (no raw bullet text from server). The `reasoning` field is included at the top-level of the response.
 
 Gate Status (pre-Phase 0): PASS — No violations identified. Any exceptions will be documented in Complexity Tracking if they arise.
 

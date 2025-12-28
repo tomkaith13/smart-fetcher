@@ -75,20 +75,22 @@ For ambiguous queries, the system identifies top candidate tags or categories an
   - `name`: resource title
   - `summary`: brief description (1–2 sentences)
   - `link`: internal deep link `/resources/{uuid}` derived from the canonical store
-  Clients SHOULD render these items as a bulleted list for readability; server MUST NOT emit raw bullet text—only structured JSON.
+  The top-level response MUST include a `reasoning` field (string) containing the DSPy extractor's explanation of why the extracted tags match the query (empty string if unavailable). Clients SHOULD render these items as a bulleted list for readability; server MUST NOT emit raw bullet text—only structured JSON.
 
   FR-011 Acceptance Criteria:
   - Responses include only internal deep links of the form `/resources/{uuid}`; all UUIDs resolve in the canonical store.
   - Each item includes `uuid`, `name`, `summary`, and `link`; optional `tags` MAY be included for traceability.
+  - The top-level `reasoning` field MUST contain the DSPy extractor's explanation of why the extracted tags match the query; if reasoning is unavailable (e.g., fallback mode), it MUST be an empty string.
   - No fabricated or external URLs appear in any response.
   - JSON wrapping is consistent: `count == len(results)` and `query` echoes the input.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Query**: The natural language input provided by a user; attributes include raw text, extracted tags, confidence scores.
+- **Query**: The natural language input provided by a user; attributes include raw text, extracted tags, confidence scores, reasoning.
 - **Tag**: Domain-specific label derived from the query; attributes include name, confidence, synonyms.
 - **Resource**: Canonical item in the dataset/store; attributes include `uuid`, title, summary, canonical link(s), associated tags.
 - **Mapping**: Associations between tags and resources; attributes include tag name, `uuid`, mapping confidence.
+- **Reasoning**: Brief explanation from the DSPy extractor of why extracted tags match the query; attributes include text, source (DSPy or fallback).
 
 ## Success Criteria *(mandatory)*
 

@@ -15,10 +15,13 @@ Date: 2025-12-27
 ## Phase 2: Foundational
 
 - [X] T007 Implement `NLTagExtractor` using DSPy + Ollama in src/services/nl_tag_extractor.py
+- [X] T007a Capture reasoning from DSPy extractor in `TagExtractionResult` in src/services/nl_tag_extractor.py
 - [X] T008 Implement `NLSearchService` orchestrating extract → map → verify → respond in src/services/nl_search_service.py
+- [X] T008a Remove per-item reasoning; include reasoning only at top-level `NLSearchResponse` and propagate through route/spec/tests/contracts
 - [X] T009 [P] Add deterministic link verifier in src/utils/link_verifier.py
 - [X] T010 [P] Extend `ResourceStore` helper: get_by_tags(list[str]) in src/services/resource_store.py
 - [X] T011 Add `ResourceItem` DTO (uuid, title, summary, link) in src/api/schemas.py
+- [X] T011a Add `reasoning` field to `NLSearchResponse` (top-level) in src/api/schemas.py
 - [X] T012 Configure graceful fallback to keyword extraction when inference unavailable in src/services/nl_tag_extractor.py
 
 ## Phase 3: User Story 1 (P1)

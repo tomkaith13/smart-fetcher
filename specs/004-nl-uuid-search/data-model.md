@@ -3,9 +3,9 @@
 ## Entities
 
 - Query
-  - Fields: `raw_text: str`, `extracted_tags: list[str]`, `confidence: float`, `ambiguous: bool`
+  - Fields: `raw_text: str`, `extracted_tags: list[str]`, `confidence: float`, `ambiguous: bool`, `reasoning: str`
   - Validation: `raw_text` non-empty; max length 1000; confidence ∈ [0,1]
-  - Notes: `ambiguous` set when multiple tags have similar confidence.
+  - Notes: `ambiguous` set when multiple tags have similar confidence; `reasoning` contains DSPy explanation or empty string if unavailable.
 
 - Tag
   - Fields: `name: str`, `confidence: float`, `synonyms: list[str]`
@@ -14,6 +14,11 @@
 - Resource
   - Fields: `uuid: str`, `title: str`, `summary: str`, `tags: list[str]`
   - Validation: `uuid` valid UUID; `title` non-empty; `summary` length ≤ 500; `tags` non-empty
+
+- Reasoning
+  - Fields: `text: str`, `source: str` (DSPy or fallback)
+  - Validation: `text` non-empty if source is DSPy; empty string if fallback
+  - Notes: Brief explanation of why extracted tags match the query
 
 - Mapping
   - Fields: `tag: str`, `uuid: str`, `confidence: float`

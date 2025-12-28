@@ -35,7 +35,7 @@ class NLSearchService:
         self.resource_store = resource_store
         self.default_cap = default_cap
 
-    def search(self, query: str, cap: int | None = None) -> tuple[list[ResourceItem], str | None, list[str]]:
+    def search(self, query: str, cap: int | None = None) -> tuple[list[ResourceItem], str | None, list[str], str]:
         """Execute NL search: extract tags, map to resources, verify links.
 
         Args:
@@ -43,10 +43,11 @@ class NLSearchService:
             cap: Optional result cap override (uses default if None).
 
         Returns:
-            Tuple of (resource_items, message, candidate_tags):
+            Tuple of (resource_items, message, candidate_tags, reasoning):
             - resource_items: List of ResourceItem with verified links.
             - message: Optional guidance message for no-match or ambiguity.
             - candidate_tags: List of suggested tags for refinement (empty if not ambiguous).
+            - reasoning: DSPy extractor explanation for why extracted tags match the query.
         """
         result_cap = cap if cap is not None else self.default_cap
 
@@ -61,7 +62,7 @@ class NLSearchService:
             message = (
                 f"No matching resources found. Try searching with tags like: {', '.join(suggestions)}"
             )
-            return ([], message, suggestions)
+            return ([], message, suggestions, extraction.reasoning)
 
         # Step 3: Handle ambiguity scenario
         if extraction.ambiguous and len(extraction.tags) > 1:
@@ -74,7 +75,7 @@ class NLSearchService:
             # Return top resources from all candidate tags (capped)
             resources = self.resource_store.get_by_tags(extraction.tags)[:result_cap]
             items = self._build_resource_items(resources, extraction.tags)
-            return (items, message, extraction.tags)
+            return (items, message, extraction.tags, extraction.reasoning)
 
         # Step 4: Standard flow - map tags to resources
         resources = self.resource_store.get_by_tags(extraction.tags)
@@ -83,7 +84,7 @@ class NLSearchService:
         # Step 5: Apply result cap
         capped_resources = resources[:result_cap]
 
-        # Step 6: Build ResourceItems with verified links
+        # Step 6: Build ResourceItems with verified links and reasoning
         items = self._build_resource_items(capped_resources, extraction.tags)
 
         # Step 7: Verify all links are valid (deterministic verification)
@@ -95,7 +96,7 @@ class NLSearchService:
                 continue
 
         logger.info(f"Returning {len(items)} verified resource items for query: '{query}'")
-        return (items, None, [])
+        return (items, None, [], extraction.reasoning)
 
     def _build_resource_items(
         self,
@@ -107,7 +108,6 @@ class NLSearchService:
         Args:
             resources: List of Resource objects to convert.
             tags: List of tags that matched (for traceability).
-
         Returns:
             List of ResourceItem with uuid, name, summary, link, tags.
         """

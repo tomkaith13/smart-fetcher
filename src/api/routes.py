@@ -213,7 +213,7 @@ async def nl_search(
     # T015: Call NLSearchService.search()
     try:
         nl_service = request.app.state.nl_search_service
-        resource_items, message, candidate_tags = nl_service.search(query)
+        resource_items, message, candidate_tags, reasoning = nl_service.search(query)
 
         # T016+T040: Assemble NLSearchResponse with JSON wrapping
         return NLSearchResponse(
@@ -222,6 +222,7 @@ async def nl_search(
             query=query,
             message=message,
             candidate_tags=candidate_tags,
+            reasoning=reasoning,
         )
 
     except ConnectionError as e:

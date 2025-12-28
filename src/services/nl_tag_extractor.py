@@ -16,11 +16,13 @@ class TagExtractionResult(NamedTuple):
         tags: List of extracted tags, ordered by confidence.
         confidence: Confidence score of the top tag [0,1].
         ambiguous: True if multiple tags have similar confidence.
+        reasoning: Brief explanation from DSPy of why these tags match the query.
     """
 
     tags: list[str]
     confidence: float
     ambiguous: bool
+    reasoning: str
 
 
 class NLTagExtractor:
@@ -99,6 +101,9 @@ class NLTagExtractor:
                 top_tags_str = result.top_tags.strip()
                 extracted = [tag.strip() for tag in top_tags_str.split(",")]
 
+                # Capture reasoning from DSPy output
+                reasoning = getattr(result, "reasoning", "").strip()
+
                 # Filter to valid tags only
                 valid_tags = [tag for tag in extracted if tag in self.available_tags]
 
@@ -114,6 +119,7 @@ class NLTagExtractor:
                         tags=valid_tags,
                         confidence=confidence,
                         ambiguous=ambiguous,
+                        reasoning=reasoning,
                     )
 
             except Exception as e:
@@ -150,6 +156,7 @@ class NLTagExtractor:
                 tags=matched_tags,
                 confidence=confidence,
                 ambiguous=ambiguous,
+                reasoning="Keyword-based matching (fallback mode)",
             )
 
         # No matches
@@ -158,4 +165,5 @@ class NLTagExtractor:
             tags=[],
             confidence=0.0,
             ambiguous=False,
+            reasoning="",
         )

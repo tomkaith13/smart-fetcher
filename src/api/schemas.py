@@ -159,6 +159,10 @@ class NLSearchResponse(BaseModel):
     candidate_tags: list[str] = Field(
         default_factory=list, description="Suggested tags for refinement"
     )
+    reasoning: str = Field(
+        default="",
+        description="DSPy extractor explanation of why extracted tags match the query",
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -174,6 +178,7 @@ class NLSearchResponse(BaseModel):
                 ],
                 "count": 1,
                 "query": "show me resources that help me improve my hiking habits",
+                "reasoning": "The query asks for resources to improve hiking habits, which directly matches the hiking tag.",
             }
         }
     }
