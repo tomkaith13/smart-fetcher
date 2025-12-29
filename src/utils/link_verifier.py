@@ -1,9 +1,12 @@
 """Link verification utility for internal deep links."""
 
-import re
-from typing import NamedTuple
+from __future__ import annotations
 
-from src.services.resource_store import ResourceStore
+import re
+from typing import TYPE_CHECKING, NamedTuple
+
+if TYPE_CHECKING:
+    from src.services.resource_store import ResourceStore
 
 # UUID regex pattern
 UUID_PATTERN = re.compile(
@@ -73,28 +76,38 @@ def verify_internal_link(link: str, resource_store: ResourceStore) -> LinkVerifi
 
 
 class LinkVerifier:
-    """Simple wrapper for link verification functions."""
+    """Link verification wrapper that checks format and resource existence."""
 
-    def __init__(self) -> None:
-        """Initialize the link verifier."""
-        pass
+    def __init__(self, resource_store: ResourceStore | None = None) -> None:
+        """Initialize the link verifier.
+
+        Args:
+            resource_store: Optional ResourceStore for verifying UUID existence.
+                If None, only format validation is performed.
+        """
+        self.resource_store = resource_store
 
     def verify_link(self, url: str) -> bool:
         """Verify if a URL/link is valid.
 
-        For internal links, this would check /resources/{uuid} format.
-        For external URLs, this would do basic validation.
+        For internal links, validates format AND checks if UUID exists in resource store.
+        For external URLs, does basic validation.
 
         Args:
             url: URL or internal link to verify.
 
         Returns:
-            True if valid, False otherwise.
+            True if valid (format correct and resource exists for internal links), False otherwise.
         """
-        # For internal links
+        # For internal links - use full verification if resource_store available
         if url.startswith("/resources/"):
-            uuid_part = url[len("/resources/") :]
-            return bool(UUID_PATTERN.match(uuid_part))
+            if self.resource_store is not None:
+                result = verify_internal_link(url, self.resource_store)
+                return result.valid
+            else:
+                # Fallback to format-only validation if no resource_store
+                uuid_part = url[len("/resources/") :]
+                return bool(UUID_PATTERN.match(uuid_part))
 
         # For external URLs - basic validation
         return url.startswith("http://") or url.startswith("https://")

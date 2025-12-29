@@ -8,8 +8,11 @@ from src.main import app
 
 @pytest.fixture
 def client() -> TestClient:
-    """Create test client for API."""
-    return TestClient(app)
+    """Create test client for API with lifespan events, mocking DSPy config."""
+    from unittest.mock import patch
+
+    with patch("dspy.LM"), patch("dspy.configure"), TestClient(app) as c:
+        yield c
 
 
 def test_agent_endpoint_exists(client: TestClient) -> None:

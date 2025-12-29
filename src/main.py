@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI) -> Any:
     )
 
     # Initialize experimental ReACT agent
-    app.state.link_verifier = LinkVerifier()
+    app.state.link_verifier = LinkVerifier(resource_store=app.state.resource_store)
     app.state.react_agent = ReACTAgent(
         nl_search_service=app.state.nl_search_service,
         link_verifier=app.state.link_verifier,

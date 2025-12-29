@@ -39,8 +39,8 @@
 ### ValidationResult
 - Fields:
   - `resource_url: string`
-  - `is_valid: boolean`
-  - `reason: string`
+  - `is_valid: boolean` (true if format valid AND resource exists in datastore)
+  - `reason: string` (e.g., "invalid format", "UUID not found in datastore")
   - `timestamp: datetime`
 
 ## Response Shapes

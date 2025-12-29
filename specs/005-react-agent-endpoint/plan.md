@@ -67,7 +67,7 @@ src/
 │   ├── semantic_search.py   # Existing semantic search
 │   └── agent/               # NEW: agent orchestration (if needed)
 └── utils/
-    ├── link_verifier.py     # Resource validation tool
+    ├── link_verifier.py     # Resource validation tool (validates format + datastore existence)
     └── dataset_validator.py # Dataset validation
 
 tests/
@@ -81,7 +81,7 @@ tests/
 ## Phase 2 Implementation Plan
 
 - Add `src/services/agent/react_agent.py` implementing a DSPy ReACT-style agent:
-    - Wrap existing tools as DSPy `Tool` functions: `nl_search(query)` and `validate_resource(url)`.
+    - Wrap existing tools as DSPy `Tool` functions: `nl_search(query)` and `validate_resource(url)` (checks format AND datastore existence).
     - Compose an agent module that plans, calls tools, and produces a final answer without exposing tool traces.
 - Add experimental route in `src/api/routes.py`: `POST /experimental/agent`.
 - Update `src/api/schemas.py` with request/response models aligned to OpenAPI.

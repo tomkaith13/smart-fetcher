@@ -71,7 +71,7 @@ If the agent cannot find sufficient information or validation fails, the system 
 
 - **FR-001**: The system MUST expose an experimental endpoint that accepts a user query and returns the AI agent's final answer.
 - **FR-002**: The agent MUST be able to call the NL search tool to retrieve relevant information supporting the query.
-- **FR-003**: The agent MUST be able to call the resource validator tool to verify resource integrity and suitability before inclusion.
+- **FR-003**: The agent MUST be able to call the resource validator tool to verify resource integrity (format validation and existence in datastore) before inclusion.
 - **FR-004**: The endpoint MUST return only the agent's final message content to the user (no internal prompts or hidden tool responses). Tool traces MUST NOT be exposed in any user-facing response; logs are internal only.
 - **FR-005**: The system MUST indicate experimental status and avoid definitive claims when evidence is insufficient.
 - **FR-006**: The system MUST handle tool failures or timeouts gracefully and return a clear message.
@@ -82,7 +82,7 @@ If the agent cannot find sufficient information or validation fails, the system 
 
 - **FR-001**: Hitting the endpoint with a valid query returns a final answer string within a single response.
 - **FR-002**: For queries requiring facts, logs show NL search tool invoked at least once; answer incorporates discovered information.
-- **FR-003**: When citing resources, only those passing validation appear; invalid resources are excluded.
+- **FR-003**: When citing resources, only those passing validation (correct format AND existing in datastore) appear; invalid or non-existent resources are excluded.
 - **FR-004**: Default responses contain only the final answer; no internal chain-of-thought or tool outputs are exposed.
 - **FR-005**: In low-evidence cases, response includes a limitation note and avoids definitive statements.
 - **FR-006**: If tools time out, user receives a clear message without system errors.
