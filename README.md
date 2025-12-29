@@ -35,6 +35,23 @@ For NL UUID search feature details, see [specs/004-nl-uuid-search/](specs/004-nl
 make start
 ```
 
+## Testing
+
+Use Make targets to control test scope:
+
+```bash
+# Fast suite: unit + contract (no integration)
+make test
+
+# Full suite: unit + contract + integration
+make test-all
+
+# Optional: lint, format, types
+ruff check .
+ruff format src/ tests/
+mypy src/
+```
+
 ## Health Monitoring
 
 The `/health` endpoint returns startup-time health status:

@@ -67,7 +67,13 @@ Response:
 ## Testing
 
 ```bash
-pytest -q
+# Fast suite: unit + contract
+make test
+
+# Full suite: includes integration
+make test-all
+
+# Lint & types
 ruff check .
 mypy src/
 ```
