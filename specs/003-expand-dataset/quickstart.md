@@ -221,9 +221,16 @@ def test_list_resources_returns_500():
 
 **Run Tests**:
 ```bash
-pytest tests/unit/test_resource_store.py -v
-pytest tests/unit/test_dataset_validator.py -v
-pytest tests/contract/ -v
+# Fast suite: unit + contract (no integration)
+make test
+
+# Full suite: unit + contract + integration
+make test-all
+
+# Targeted runs (optional)
+uv run pytest tests/unit/test_resource_store.py -v
+uv run pytest tests/unit/test_dataset_validator.py -v
+uv run pytest tests/contract/ -v
 ```
 
 ---
@@ -263,8 +270,11 @@ ruff check src/ tests/
 # Type check
 mypy src/
 
-# Run all tests
-pytest tests/ -v --cov=src --cov-report=term-missing
+# Run full test suite (including integration)
+make test-all
+
+# Coverage (optional)
+uv run pytest tests/ -v --cov=src --cov-report=term-missing
 
 # Verify test coverage for new code
 # Expected: dataset_validator.py should have >80% coverage
@@ -291,7 +301,7 @@ curl "http://localhost:8000/api/search?tag=automobile" | jq '.count'
 
 ## Testing Checklist
 
-- [ ] All tests pass: `pytest tests/ -v`
+- [ ] All tests pass: `make test-all` (or `make test` for fast runs)
 - [ ] Ruff linting passes: `ruff check .`
 - [ ] Type checking passes: `mypy src/`
 - [ ] Code formatted: `ruff format --check .`

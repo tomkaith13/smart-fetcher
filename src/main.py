@@ -8,10 +8,12 @@ from typing import Any
 from fastapi import FastAPI
 
 from src.api.routes import router
+from src.services.agent.react_agent import ReACTAgent
 from src.services.nl_search_service import NLSearchService
 from src.services.nl_tag_extractor import NLTagExtractor
 from src.services.resource_store import ResourceStore
 from src.services.semantic_search import SemanticSearchService
+from src.utils.link_verifier import LinkVerifier
 
 # Basic logging configuration; uvicorn can override, but this sets defaults.
 logging.basicConfig(
@@ -45,6 +47,13 @@ async def lifespan(app: FastAPI) -> Any:
         extractor=app.state.nl_tag_extractor,
         resource_store=app.state.resource_store,
         default_cap=NL_SEARCH_DEFAULT_RESULT_CAP,
+    )
+
+    # Initialize experimental ReACT agent
+    app.state.link_verifier = LinkVerifier(resource_store=app.state.resource_store)
+    app.state.react_agent = ReACTAgent(
+        nl_search_service=app.state.nl_search_service,
+        link_verifier=app.state.link_verifier,
     )
 
     # Compute and cache startup health snapshot (no per-request checks)

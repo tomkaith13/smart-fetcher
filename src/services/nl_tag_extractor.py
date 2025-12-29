@@ -62,9 +62,7 @@ class NLTagExtractor:
                 from the available tag set. Rank by relevance/confidence.
                 """
 
-                query: str = dspy.InputField(
-                    desc="Natural language query about resources to find"
-                )
+                query: str = dspy.InputField(desc="Natural language query about resources to find")
                 available_tags: str = dspy.InputField(
                     desc=f"Available tags: {self.available_tags_str}"
                 )
@@ -110,7 +108,9 @@ class NLTagExtractor:
                 if valid_tags:
                     # Assign synthetic confidence scores (first=highest)
                     confidence = 1.0 if len(valid_tags) == 1 else 0.7
-                    ambiguous = len(valid_tags) > 1 and (1.0 - confidence) < self.ambiguity_threshold
+                    ambiguous = (
+                        len(valid_tags) > 1 and (1.0 - confidence) < self.ambiguity_threshold
+                    )
 
                     logger.info(
                         f"Extracted tags for '{query}': {valid_tags} (confidence={confidence:.2f}, ambiguous={ambiguous})"

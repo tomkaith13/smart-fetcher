@@ -92,9 +92,7 @@ class TestNLSearchAPIIntegration:
         assert data["reasoning"] != ""
         assert isinstance(data["reasoning"], str)
 
-    def test_nl_search_verifies_internal_links(
-        self, client_with_mock_services: TestClient
-    ) -> None:
+    def test_nl_search_verifies_internal_links(self, client_with_mock_services: TestClient) -> None:
         """Test that all returned links are verified internal deep links (T042, US1)."""
         response = client_with_mock_services.get("/nl/search?q=hiking")
 
@@ -110,9 +108,7 @@ class TestNLSearchAPIIntegration:
             expected_link = f"/resources/{result['uuid']}"
             assert result["link"] == expected_link
 
-    def test_nl_search_respects_result_cap(
-        self, client_with_mock_services: TestClient
-    ) -> None:
+    def test_nl_search_respects_result_cap(self, client_with_mock_services: TestClient) -> None:
         """Test that NL search respects the default result cap of 5 (US1)."""
         # Mock extractor to return many results
         mock_store = client_with_mock_services.mock_store

@@ -1,8 +1,14 @@
 """Request and response schemas for the smart-fetcher API."""
 
+import os
+
 from pydantic import BaseModel, Field, field_validator
 
 from src.models.resource import Resource
+
+# Agent Configuration Constants
+AGENT_TIMEOUT_SEC = int(os.getenv("AGENT_TIMEOUT_SEC", "5"))
+AGENT_MAX_TOKENS = int(os.getenv("AGENT_MAX_TOKENS", "1024"))
 
 
 class SearchResponse(BaseModel):
@@ -179,6 +185,149 @@ class NLSearchResponse(BaseModel):
                 "count": 1,
                 "query": "show me resources that help me improve my hiking habits",
                 "reasoning": "The query asks for resources to improve hiking habits, which directly matches the hiking tag.",
+            }
+        }
+    }
+
+
+# Agent Error Codes
+class AgentErrorCode:
+    """Error codes for agent endpoint."""
+
+    TOOL_TIMEOUT = "TOOL_TIMEOUT"
+    INTERNAL_ERROR = "INTERNAL_ERROR"
+
+
+class Citation(BaseModel):
+    """Citation for a validated resource.
+
+    Attributes:
+        title: Resource title.
+        url: Resource URL (must pass validation).
+        summary: Optional brief description.
+    """
+
+    title: str = Field(..., description="Resource title")
+    url: str = Field(..., description="Resource URL (validated)")
+    summary: str | None = Field(None, description="Brief description")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "title": "Hiking Safety Guide",
+                "url": "https://example.com/hiking-guide",
+                "summary": "Comprehensive guide to safe hiking practices",
+            }
+        }
+    }
+
+
+class AgentRequest(BaseModel):
+    """Request for the experimental agent endpoint.
+
+    Attributes:
+        query: Natural language user query.
+        include_sources: Whether to include validated citations.
+        max_tokens: Safety cap for response length.
+    """
+
+    query: str = Field(..., min_length=1, max_length=4000, description="User query")
+    include_sources: bool = Field(default=False, description="Include validated citations")
+    max_tokens: int = Field(
+        default=AGENT_MAX_TOKENS, ge=128, le=4096, description="Max response tokens"
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "query": "What is DSPy and how does it help with LLM tooling?",
+                "include_sources": False,
+                "max_tokens": 1024,
+            }
+        }
+    }
+
+
+class AgentMeta(BaseModel):
+    """Metadata for agent responses.
+
+    Attributes:
+        experimental: Indicates experimental status.
+    """
+
+    experimental: bool = Field(default=True, description="Experimental status indicator")
+
+
+class AgentAnswer(BaseModel):
+    """Agent response without citations.
+
+    Attributes:
+        answer: The agent's final answer.
+        query: Original query echoed back.
+        meta: Response metadata.
+    """
+
+    answer: str = Field(..., description="Agent's final answer")
+    query: str = Field(..., description="Original query")
+    meta: AgentMeta = Field(default_factory=AgentMeta, description="Response metadata")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "answer": "DSPy is a framework for programming with language models...",
+                "query": "What is DSPy?",
+                "meta": {"experimental": True},
+            }
+        }
+    }
+
+
+class AgentAnswerWithCitations(AgentAnswer):
+    """Agent response with validated citations.
+
+    Attributes:
+        citations: List of validated resource citations.
+    """
+
+    citations: list[Citation] = Field(default_factory=list, description="Validated citations")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "answer": "DSPy is a framework for programming with language models...",
+                "query": "What is DSPy?",
+                "citations": [
+                    {
+                        "title": "DSPy Documentation",
+                        "url": "https://dspy.ai",
+                        "summary": "Official DSPy documentation",
+                    }
+                ],
+                "meta": {"experimental": True},
+            }
+        }
+    }
+
+
+class AgentErrorResponse(BaseModel):
+    """Error response for agent endpoint.
+
+    Attributes:
+        error: Human-readable error message.
+        code: Machine-readable error code (TOOL_TIMEOUT, INTERNAL_ERROR).
+        query: Original query that caused the error.
+    """
+
+    error: str = Field(..., description="Human-readable error message")
+    code: str = Field(..., description="Machine-readable error code")
+    query: str = Field(..., description="Original query")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "error": "Agent execution timed out after 5 seconds",
+                "code": "TOOL_TIMEOUT",
+                "query": "What is DSPy?",
             }
         }
     }

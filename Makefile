@@ -1,4 +1,4 @@
-.PHONY: start ollama-ps ollama-check test test-unit test-integration test-contract
+.PHONY: start ollama-ps ollama-check test test-all test-unit test-integration test-contract format lint check
 
 # Configurable defaults
 LOG_LEVEL ?= info
@@ -9,7 +9,12 @@ start:
 	uv run uvicorn src.main:app --host $(HOST) --port $(PORT) --log-level $(LOG_LEVEL)
 
 test:
+	uv run pytest tests/unit/ tests/contract/ -v
+
+test-all:
 	uv run pytest tests/ -v
+
+# Fast test target (excludes integration tests)
 
 test-unit:
 	uv run pytest tests/unit/ -v
@@ -19,6 +24,15 @@ test-integration:
 
 test-contract:
 	uv run pytest tests/contract/ -v
+
+format:
+	uv run ruff format src/ tests/
+
+lint:
+	uv run ruff check src/ tests/
+
+check: lint
+	uv run mypy src/
 
 ollama-ps:
 	@echo "Listing running Ollama models..."

@@ -109,13 +109,16 @@ Once running, visit:
 ## Running Tests
 
 ```bash
-# All tests
-uv run pytest
+# Fast suite (recommended during development): unit + contract
+make test
 
-# With coverage
+# Full suite (includes integration):
+make test-all
+
+# Coverage (optional):
 uv run pytest --cov=src --cov-report=term-missing
 
-# Specific test types
+# Specific test types (optional):
 uv run pytest tests/unit/
 uv run pytest tests/integration/
 uv run pytest tests/contract/

@@ -116,9 +116,7 @@ class TestNLSearchResponseFormat:
 
         assert data["count"] == len(data["results"])
 
-    def test_nl_search_response_echoes_query(
-        self, client_with_mock_nl_search: TestClient
-    ) -> None:
+    def test_nl_search_response_echoes_query(self, client_with_mock_nl_search: TestClient) -> None:
         """Verify query field echoes the input query (T041)."""
         query = "show me resources that help me improve my hiking habits"
         response = client_with_mock_nl_search.get(f"/nl/search?q={query}")
@@ -176,7 +174,10 @@ class TestNLSearchResponseFormat:
 
             # Verify ambiguity handling (T032)
             assert data["message"] is not None
-            assert "multiple categories" in data["message"].lower() or "refine" in data["message"].lower()
+            assert (
+                "multiple categories" in data["message"].lower()
+                or "refine" in data["message"].lower()
+            )
             assert len(data["candidate_tags"]) >= 2
             assert data["count"] >= 0
 
@@ -194,9 +195,7 @@ class TestNLSearchResponseFormat:
         assert data["reasoning"] != ""
         assert len(data["reasoning"]) > 10  # Should be a meaningful explanation
 
-    def test_nl_search_no_fabricated_links(
-        self, client_with_mock_nl_search: TestClient
-    ) -> None:
+    def test_nl_search_no_fabricated_links(self, client_with_mock_nl_search: TestClient) -> None:
         """Verify all links are internal deep links, no external/fabricated URLs (T042)."""
         response = client_with_mock_nl_search.get("/nl/search?q=hiking")
 
