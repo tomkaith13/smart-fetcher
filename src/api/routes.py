@@ -1,7 +1,7 @@
 """API route definitions for smart-fetcher."""
 
 import re
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 
@@ -234,3 +234,55 @@ async def nl_search(
                 query=query,
             ).model_dump(),
         ) from e
+
+
+@router.post(
+    "/experimental/agent",
+    response_model=None,
+    responses={
+        200: {"description": "Final answer from agent"},
+        400: {"model": ErrorResponse, "description": "Invalid request"},
+        504: {"model": ErrorResponse, "description": "Tool timeout or unavailable"},
+    },
+    tags=["Experimental"],
+    summary="Run experimental ReACT agent",
+    description=(
+        "Experimental endpoint that runs a ReACT-style agent using NL search and "
+        "resource validation tools. Returns only the final answer; tool traces are "
+        "internal-only. Citations included only when explicitly requested."
+    ),
+)
+async def run_experimental_agent(request: Request) -> dict[str, Any]:
+    """Execute experimental agent for single-turn query."""
+    from src.api.schemas import AgentErrorCode, AgentRequest
+
+    try:
+        # Parse request body
+        body = await request.json()
+        agent_request = AgentRequest(**body)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=ErrorResponse(
+                error=f"Invalid request format: {e}",
+                code="INVALID_REQUEST",
+                query="",
+            ).model_dump(),
+        ) from e
+
+    # Get agent from app state
+    agent = request.app.state.react_agent
+
+    # Run agent
+    result: dict[str, Any] = agent.run(
+        query=agent_request.query,
+        include_sources=agent_request.include_sources,
+        max_tokens=agent_request.max_tokens,
+    )
+
+    # Check if result is an error
+    if "error" in result:
+        status_code = 504 if result["code"] == AgentErrorCode.TOOL_TIMEOUT else 500
+        raise HTTPException(status_code=status_code, detail=result)
+
+    return result

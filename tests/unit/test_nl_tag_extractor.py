@@ -29,7 +29,9 @@ class TestNLTagExtractorWithDSPy:
         # Mock DSPy result with reasoning
         mock_result = MagicMock()
         mock_result.top_tags = "hiking"
-        mock_result.reasoning = "The query mentions improving hiking habits, which directly relates to the hiking tag."
+        mock_result.reasoning = (
+            "The query mentions improving hiking habits, which directly relates to the hiking tag."
+        )
         extractor.extractor = MagicMock(return_value=mock_result)
 
         result = extractor.extract("show me resources for hiking")
@@ -37,7 +39,10 @@ class TestNLTagExtractorWithDSPy:
         assert result.tags == ["hiking"]
         assert result.confidence == 1.0
         assert result.ambiguous is False
-        assert result.reasoning == "The query mentions improving hiking habits, which directly relates to the hiking tag."
+        assert (
+            result.reasoning
+            == "The query mentions improving hiking habits, which directly relates to the hiking tag."
+        )
         assert len(result.reasoning) > 0
 
     def test_extract_multiple_tags_with_reasoning(
@@ -49,7 +54,9 @@ class TestNLTagExtractorWithDSPy:
         # Mock DSPy result with multiple tags
         mock_result = MagicMock()
         mock_result.top_tags = "fitness, health"
-        mock_result.reasoning = "Query about exercise relates to both fitness training and general health."
+        mock_result.reasoning = (
+            "Query about exercise relates to both fitness training and general health."
+        )
         extractor.extractor = MagicMock(return_value=mock_result)
 
         result = extractor.extract("tell me about exercise")
@@ -59,7 +66,10 @@ class TestNLTagExtractorWithDSPy:
         assert "health" in result.tags
         assert result.confidence == 0.7
         assert result.ambiguous is False  # 0.7 > ambiguity_threshold
-        assert result.reasoning == "Query about exercise relates to both fitness training and general health."
+        assert (
+            result.reasoning
+            == "Query about exercise relates to both fitness training and general health."
+        )
 
     def test_extract_filters_invalid_tags_preserves_reasoning(
         self, available_tags: list[str], mock_lm: MagicMock
@@ -133,9 +143,7 @@ class TestNLTagExtractorFallback:
         assert result.ambiguous is True
         assert result.reasoning == "Keyword-based matching (fallback mode)"
 
-    def test_fallback_extract_no_match_empty_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_fallback_extract_no_match_empty_reasoning(self, available_tags: list[str]) -> None:
         """Test no-match scenario returns empty reasoning."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
@@ -158,9 +166,7 @@ class TestNLTagExtractorFallback:
         assert result.confidence == 1.0
         assert result.reasoning == "Keyword-based matching (fallback mode)"
 
-    def test_fallback_whole_word_matching_with_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_fallback_whole_word_matching_with_reasoning(self, available_tags: list[str]) -> None:
         """Test fallback mode matches whole words only and provides reasoning."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
@@ -182,9 +188,7 @@ class TestNLTagExtractorEdgeCases:
         """Sample available tags."""
         return ["hiking", "finance", "health"]
 
-    def test_empty_query_returns_no_tags_no_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_empty_query_returns_no_tags_no_reasoning(self, available_tags: list[str]) -> None:
         """Test empty query returns no tags and empty reasoning."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
@@ -194,9 +198,7 @@ class TestNLTagExtractorEdgeCases:
         assert result.confidence == 0.0
         assert result.reasoning == ""
 
-    def test_whitespace_only_query_no_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_whitespace_only_query_no_reasoning(self, available_tags: list[str]) -> None:
         """Test whitespace-only query returns no tags and empty reasoning."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
@@ -206,9 +208,7 @@ class TestNLTagExtractorEdgeCases:
         assert result.confidence == 0.0
         assert result.reasoning == ""
 
-    def test_special_characters_in_query_with_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_special_characters_in_query_with_reasoning(self, available_tags: list[str]) -> None:
         """Test special characters don't break extraction and reasoning is provided."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
@@ -217,9 +217,7 @@ class TestNLTagExtractorEdgeCases:
         assert "hiking" in result.tags
         assert result.reasoning == "Keyword-based matching (fallback mode)"
 
-    def test_unicode_characters_with_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_unicode_characters_with_reasoning(self, available_tags: list[str]) -> None:
         """Test Unicode characters are handled and reasoning is provided."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
@@ -229,15 +227,11 @@ class TestNLTagExtractorEdgeCases:
         assert "health" in result.tags
         assert result.reasoning == "Keyword-based matching (fallback mode)"
 
-    def test_very_long_query_with_reasoning(
-        self, available_tags: list[str]
-    ) -> None:
+    def test_very_long_query_with_reasoning(self, available_tags: list[str]) -> None:
         """Test very long queries are handled and reasoning is provided."""
         extractor = NLTagExtractor(available_tags, lm=None)
 
-        long_query = (
-            "I am looking for resources about hiking " * 50 + "and also some finance tips"
-        )
+        long_query = "I am looking for resources about hiking " * 50 + "and also some finance tips"
         result = extractor.extract(long_query)
 
         assert "hiking" in result.tags

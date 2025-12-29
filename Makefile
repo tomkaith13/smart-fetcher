@@ -1,4 +1,4 @@
-.PHONY: start ollama-ps ollama-check test test-unit test-integration test-contract
+.PHONY: start ollama-ps ollama-check test test-unit test-integration test-contract format lint check
 
 # Configurable defaults
 LOG_LEVEL ?= info
@@ -19,6 +19,15 @@ test-integration:
 
 test-contract:
 	uv run pytest tests/contract/ -v
+
+format:
+	uv run ruff format src/ tests/
+
+lint:
+	uv run ruff check src/ tests/
+
+check: lint
+	uv run mypy src/
 
 ollama-ps:
 	@echo "Listing running Ollama models..."

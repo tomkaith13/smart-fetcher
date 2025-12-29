@@ -1,6 +1,5 @@
 """Unit tests for dataset validation utilities."""
 
-
 from src.models.resource import Resource
 from src.utils.dataset_validator import (
     ValidationReport,
@@ -78,10 +77,12 @@ class TestValidateTagDistribution:
         """Test validation passes when all tags have sufficient entries."""
         resources = []
         for tag in ["home", "car", "food"]:
-            resources.extend([
-                Resource(uuid=f"{tag}-{i}", name="R", description="desc", search_tag=tag)
-                for i in range(45)
-            ])
+            resources.extend(
+                [
+                    Resource(uuid=f"{tag}-{i}", name="R", description="desc", search_tag=tag)
+                    for i in range(45)
+                ]
+            )
 
         distribution = validate_tag_distribution(resources, min_per_tag=40)
 
@@ -96,10 +97,12 @@ class TestValidateTagDistribution:
             Resource(uuid=f"home-{i}", name="R", description="desc", search_tag="home")
             for i in range(45)
         ]
-        resources.extend([
-            Resource(uuid=f"car-{i}", name="R", description="desc", search_tag="car")
-            for i in range(35)
-        ])
+        resources.extend(
+            [
+                Resource(uuid=f"car-{i}", name="R", description="desc", search_tag="car")
+                for i in range(35)
+            ]
+        )
 
         distribution = validate_tag_distribution(resources, min_per_tag=40)
 
@@ -206,14 +209,18 @@ class TestValidateComprehensive:
         """Test comprehensive validation fails when tags below minimum."""
         resources = []
         # Create unbalanced distribution with one tag below minimum
-        resources.extend([
-            Resource(uuid=f"home-{i}", name="R", description="desc", search_tag="home")
-            for i in range(465)
-        ])
-        resources.extend([
-            Resource(uuid=f"car-{i}", name="R", description="desc", search_tag="car")
-            for i in range(35)  # Below minimum of 40
-        ])
+        resources.extend(
+            [
+                Resource(uuid=f"home-{i}", name="R", description="desc", search_tag="home")
+                for i in range(465)
+            ]
+        )
+        resources.extend(
+            [
+                Resource(uuid=f"car-{i}", name="R", description="desc", search_tag="car")
+                for i in range(35)  # Below minimum of 40
+            ]
+        )
 
         report = validate_comprehensive(resources)
 
@@ -223,9 +230,7 @@ class TestValidateComprehensive:
 
     def test_comprehensive_includes_all_checks(self) -> None:
         """Test comprehensive validation includes all validation checks."""
-        resources = [
-            Resource(uuid="1", name="R", description="desc", search_tag="home")
-        ]
+        resources = [Resource(uuid="1", name="R", description="desc", search_tag="home")]
 
         report = validate_comprehensive(resources)
 

@@ -20,8 +20,10 @@ For dataset expansion details, see [specs/003-expand-dataset/](specs/003-expand-
 ### Environment Variables
 
 - `OLLAMA_HOST` - Ollama API endpoint (default: `http://localhost:11434`)
-- `OLLAMA_MODEL` - Model name for semantic search (default: `gpt-oss:20b`)
+- `OLLAMA_MODEL` - Model name for semantic search and agent (default: `gpt-oss:20b`)
 - `NL_SEARCH_RESULT_CAP` - Maximum results for NL search (default: `5`)
+- `AGENT_TIMEOUT_SEC` - Agent execution timeout in seconds (default: `5`)
+- `AGENT_MAX_TOKENS` - Maximum tokens for agent response (default: `1024`)
 
 For more details on Ollama health monitoring, see [specs/002-ollama-health-check/quickstart.md](specs/002-ollama-health-check/quickstart.md).
 
@@ -43,6 +45,39 @@ The `/health` endpoint returns startup-time health status:
 Health status is cached at service startup and does not change until restart. This ensures fast health checks (<100ms) without external dependency overhead.
 
 ## API Endpoints
+
+### Experimental Agent Endpoint (ReACT)
+
+**⚠️ Experimental Feature**: This endpoint uses a ReACT-style agent to answer questions by automatically searching and validating resources.
+
+Ask a question and get a direct AI-generated answer:
+
+```bash
+curl -s -X POST "http://localhost:8000/experimental/agent" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "What is DSPy and how does it help with LLM tooling?"}' | jq
+```
+
+Request with validated sources/citations:
+
+```bash
+curl -s -X POST "http://localhost:8000/experimental/agent" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tell me about hiking", "include_sources": true}' | jq
+```
+
+**Agent Behavior**:
+- Uses `gpt-oss:20b` model via Ollama by default
+- Automatically calls NL search and resource validation tools
+- Returns only the final answer (tool traces are logged internally)
+- Includes citations only when `include_sources=true`
+- Provides helpful limitation messages when evidence is insufficient
+
+**Response Structure**:
+- Success: `{answer, query, meta: {experimental: true}, citations?: [...]}`
+- Error: `{error, code, query}`
+
+For more details, see [specs/005-react-agent-endpoint/quickstart.md](specs/005-react-agent-endpoint/quickstart.md).
 
 ### Natural Language Search
 

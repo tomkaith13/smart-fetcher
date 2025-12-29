@@ -35,7 +35,9 @@ class NLSearchService:
         self.resource_store = resource_store
         self.default_cap = default_cap
 
-    def search(self, query: str, cap: int | None = None) -> tuple[list[ResourceItem], str | None, list[str], str]:
+    def search(
+        self, query: str, cap: int | None = None
+    ) -> tuple[list[ResourceItem], str | None, list[str], str]:
         """Execute NL search: extract tags, map to resources, verify links.
 
         Args:
@@ -59,9 +61,7 @@ class NLSearchService:
             logger.info(f"No tags extracted for query: '{query}'")
             # Suggest some popular tags
             suggestions = self.resource_store.get_unique_tags()[:3]
-            message = (
-                f"No matching resources found. Try searching with tags like: {', '.join(suggestions)}"
-            )
+            message = f"No matching resources found. Try searching with tags like: {', '.join(suggestions)}"
             return ([], message, suggestions, extraction.reasoning)
 
         # Step 3: Handle ambiguity scenario
@@ -120,7 +120,9 @@ class NLSearchService:
             item = ResourceItem(
                 uuid=resource.uuid,
                 name=resource.name,
-                summary=resource.description[:200] + "..." if len(resource.description) > 200 else resource.description,
+                summary=resource.description[:200] + "..."
+                if len(resource.description) > 200
+                else resource.description,
                 link=link,
                 tags=tags,
             )

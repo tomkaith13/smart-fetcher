@@ -70,3 +70,31 @@ def verify_internal_link(link: str, resource_store: ResourceStore) -> LinkVerifi
         uuid=uuid_part,
         error=None,
     )
+
+
+class LinkVerifier:
+    """Simple wrapper for link verification functions."""
+
+    def __init__(self) -> None:
+        """Initialize the link verifier."""
+        pass
+
+    def verify_link(self, url: str) -> bool:
+        """Verify if a URL/link is valid.
+
+        For internal links, this would check /resources/{uuid} format.
+        For external URLs, this would do basic validation.
+
+        Args:
+            url: URL or internal link to verify.
+
+        Returns:
+            True if valid, False otherwise.
+        """
+        # For internal links
+        if url.startswith("/resources/"):
+            uuid_part = url[len("/resources/") :]
+            return bool(UUID_PATTERN.match(uuid_part))
+
+        # For external URLs - basic validation
+        return url.startswith("http://") or url.startswith("https://")
