@@ -1,7 +1,12 @@
-"""Structured JSON-lines logger for agent tool actions."""
+"""Structured JSON-lines logger for agent tool actions.
+
+Logs to standard output instead of a file, emitting one JSON object
+per line for easy ingestion by log processors.
+"""
 
 import json
 import logging
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -14,17 +19,24 @@ class AgentLogger:
         """Initialize the agent logger.
 
         Args:
-            log_file: Path to the JSON lines log file.
+            log_file: Deprecated; retained for backward compatibility.
         """
+        # Retain attribute for backward compatibility, but do not use it
         self.log_file = Path(log_file)
+
         self.logger = logging.getLogger("agent_logger")
         self.logger.setLevel(logging.INFO)
 
-        # Create file handler if not exists
+        # Use a stream handler to write JSON lines to stdout.
+        # Avoid adding duplicate handlers if the logger is reused.
         if not self.logger.handlers:
-            handler = logging.FileHandler(self.log_file)
+            handler = logging.StreamHandler(stream=sys.stdout)
             handler.setLevel(logging.INFO)
+            # Ensure only the JSON message is emitted per line
+            handler.setFormatter(logging.Formatter("%(message)s"))
             self.logger.addHandler(handler)
+        # Prevent propagation to root logger to avoid duplicate logs
+        self.logger.propagate = False
 
     def log_tool_action(
         self,
