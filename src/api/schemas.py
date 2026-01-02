@@ -198,8 +198,8 @@ class AgentErrorCode:
     INTERNAL_ERROR = "INTERNAL_ERROR"
 
 
-class Citation(BaseModel):
-    """Citation for a validated resource.
+class ResourceCitation(BaseModel):
+    """Citation reference to a validated resource.
 
     Attributes:
         title: Resource title.
@@ -227,12 +227,12 @@ class AgentRequest(BaseModel):
 
     Attributes:
         query: Natural language user query.
-        include_sources: Whether to include validated citations.
+        include_sources: Whether to include validated resource citations.
         max_tokens: Safety cap for response length.
     """
 
     query: str = Field(..., min_length=1, max_length=4000, description="User query")
-    include_sources: bool = Field(default=False, description="Include validated citations")
+    include_sources: bool = Field(default=False, description="Include validated resource citations")
     max_tokens: int = Field(
         default=AGENT_MAX_TOKENS, ge=128, le=4096, description="Max response tokens"
     )
@@ -259,7 +259,7 @@ class AgentMeta(BaseModel):
 
 
 class AgentAnswer(BaseModel):
-    """Agent response without citations.
+    """Agent response without resource citations.
 
     Attributes:
         answer: The agent's final answer.
@@ -282,21 +282,21 @@ class AgentAnswer(BaseModel):
     }
 
 
-class AgentAnswerWithCitations(AgentAnswer):
-    """Agent response with validated citations.
+class AgentAnswerWithResources(AgentAnswer):
+    """Agent response with validated resource citations.
 
     Attributes:
-        citations: List of validated resource citations.
+        resources: List of validated resource citations.
     """
 
-    citations: list[Citation] = Field(default_factory=list, description="Validated citations")
+    resources: list[ResourceCitation] = Field(default_factory=list, description="Validated resource citations")
 
     model_config = {
         "json_schema_extra": {
             "example": {
                 "answer": "DSPy is a framework for programming with language models...",
                 "query": "What is DSPy?",
-                "citations": [
+                "resources": [
                     {
                         "title": "DSPy Documentation",
                         "url": "https://dspy.ai",

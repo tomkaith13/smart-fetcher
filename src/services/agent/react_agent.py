@@ -6,7 +6,7 @@ from typing import Any
 
 import dspy
 
-from src.api.schemas import AGENT_TIMEOUT_SEC, AgentErrorCode, Citation
+from src.api.schemas import AGENT_TIMEOUT_SEC, AgentErrorCode, ResourceCitation
 from src.services.nl_search_service import NLSearchService
 from src.utils.agent_logger import get_agent_logger
 from src.utils.link_verifier import LinkVerifier
@@ -25,7 +25,7 @@ class ReACTAgent:
     This agent orchestrates tool calls to answer user queries. It:
     1. Searches for relevant resources using NL search
     2. Validates resource URLs if needed
-    3. Generates a final answer with optional citations
+    3. Generates a final answer with optional resource citations
     """
 
     def __init__(
@@ -171,11 +171,11 @@ class ReACTAgent:
 
         Args:
             query: User's natural language query.
-            include_sources: Whether to include validated citations.
+            include_sources: Whether to include validated resource citations.
             max_tokens: Maximum tokens for response.
 
         Returns:
-            Dict with 'answer', 'query', 'meta', and optionally 'citations'.
+            Dict with 'answer', 'query', 'meta', and optionally 'resources'.
             On error, returns dict with 'error', 'code', 'query'.
         """
         session_id = str(uuid.uuid4())
@@ -196,18 +196,18 @@ class ReACTAgent:
             prediction = self.react_agent(question=query)
             answer = prediction.answer
 
-            # Extract citations if requested
-            citations: list[Citation] = []
+            # Extract resource citations if requested
+            resources: list[ResourceCitation] = []
             if include_sources:
                 # Parse the agent's reasoning trace to find validated resources
-                # The agent's tool calls are logged, we can extract citations from there
+                # The agent's tool calls are logged, we can extract resource citations from there
                 # For now, do a simple search to get resources mentioned in the answer
                 resource_items, _, _, _ = self.nl_search_service.search(query)
                 for item in resource_items[:3]:  # Top 3 results
                     is_valid = self.link_verifier.verify_link(item.link)
                     if is_valid:
-                        citations.append(
-                            Citation(
+                        resources.append(
+                            ResourceCitation(
                                 title=item.name,
                                 url=item.link,
                                 summary=item.summary,
@@ -223,8 +223,8 @@ class ReACTAgent:
                 "meta": {"experimental": True},
             }
 
-            if include_sources and citations:
-                response["citations"] = [c.model_dump() for c in citations]
+            if include_sources and resources:
+                response["resources"] = [c.model_dump() for c in resources]
 
             return response
 

@@ -5,11 +5,11 @@ from pydantic import ValidationError
 
 from src.api.schemas import (
     AgentAnswer,
-    AgentAnswerWithCitations,
+    AgentAnswerWithResources,
     AgentErrorResponse,
     AgentMeta,
     AgentRequest,
-    Citation,
+    ResourceCitation,
 )
 
 
@@ -86,9 +86,9 @@ def test_agent_answer_serialization() -> None:
     assert data["meta"]["experimental"] is True
 
 
-def test_citation_valid() -> None:
-    """Test Citation schema with required fields."""
-    citation = Citation(
+def test_resource_citation_valid() -> None:
+    """Test ResourceCitation schema with required fields."""
+    citation = ResourceCitation(
         title="DSPy Documentation",
         url="https://dspy.ai",
         summary="Official DSPy docs",
@@ -98,51 +98,51 @@ def test_citation_valid() -> None:
     assert citation.summary == "Official DSPy docs"
 
 
-def test_citation_without_summary() -> None:
-    """Test Citation allows None for summary."""
-    citation = Citation(title="DSPy Docs", url="https://dspy.ai")
+def test_resource_citation_without_summary() -> None:
+    """Test ResourceCitation allows None for summary."""
+    citation = ResourceCitation(title="DSPy Docs", url="https://dspy.ai")
     assert citation.summary is None
 
 
-def test_agent_answer_with_citations_valid() -> None:
-    """Test AgentAnswerWithCitations includes citations list."""
-    citations = [
-        Citation(title="DSPy Docs", url="https://dspy.ai", summary="Official docs"),
+def test_agent_answer_with_resources_valid() -> None:
+    """Test AgentAnswerWithResources includes resources list."""
+    resources = [
+        ResourceCitation(title="DSPy Docs", url="https://dspy.ai", summary="Official docs"),
     ]
-    answer = AgentAnswerWithCitations(
+    answer = AgentAnswerWithResources(
         answer="DSPy is a framework.",
         query="What is DSPy?",
-        citations=citations,
+        resources=resources,
     )
-    assert len(answer.citations) == 1
-    assert answer.citations[0].title == "DSPy Docs"
+    assert len(answer.resources) == 1
+    assert answer.resources[0].title == "DSPy Docs"
 
 
-def test_agent_answer_with_citations_empty() -> None:
-    """Test AgentAnswerWithCitations allows empty citations list."""
-    answer = AgentAnswerWithCitations(
+def test_agent_answer_with_resources_empty() -> None:
+    """Test AgentAnswerWithResources allows empty resources list."""
+    answer = AgentAnswerWithResources(
         answer="DSPy is a framework.",
         query="What is DSPy?",
-        citations=[],
+        resources=[],
     )
-    assert len(answer.citations) == 0
+    assert len(answer.resources) == 0
 
 
-def test_agent_answer_with_citations_serialization() -> None:
-    """Test AgentAnswerWithCitations serializes correctly."""
-    citations = [
-        Citation(title="DSPy Docs", url="https://dspy.ai"),
+def test_agent_answer_with_resources_serialization() -> None:
+    """Test AgentAnswerWithResources serializes correctly."""
+    resources = [
+        ResourceCitation(title="DSPy Docs", url="https://dspy.ai"),
     ]
-    answer = AgentAnswerWithCitations(
+    answer = AgentAnswerWithResources(
         answer="DSPy is a framework.",
         query="What is DSPy?",
-        citations=citations,
+        resources=resources,
     )
     data = answer.model_dump()
-    assert "citations" in data
-    assert len(data["citations"]) == 1
-    assert data["citations"][0]["title"] == "DSPy Docs"
-    assert data["citations"][0]["url"] == "https://dspy.ai"
+    assert "resources" in data
+    assert len(data["resources"]) == 1
+    assert data["resources"][0]["title"] == "DSPy Docs"
+    assert data["resources"][0]["url"] == "https://dspy.ai"
 
 
 def test_agent_error_response_valid() -> None:
@@ -170,8 +170,8 @@ def test_agent_error_response_serialization() -> None:
     assert data["query"] == "test query"
 
 
-def test_contract_compliance_success_no_citations() -> None:
-    """Test response matches OpenAPI contract for success without citations."""
+def test_contract_compliance_success_no_resources() -> None:
+    """Test response matches OpenAPI contract for success without resources."""
     answer = AgentAnswer(
         answer="DSPy is a framework for programming with language models.",
         query="What is DSPy?",
@@ -184,19 +184,19 @@ def test_contract_compliance_success_no_citations() -> None:
     assert "meta" in data
     assert data["meta"]["experimental"] is True
 
-    # Verify no citations field
-    assert "citations" not in data
+    # Verify no resources field
+    assert "resources" not in data
 
 
-def test_contract_compliance_success_with_citations() -> None:
-    """Test response matches OpenAPI contract for success with citations."""
-    citations = [
-        Citation(title="DSPy Documentation", url="https://dspy.ai", summary="Official docs"),
+def test_contract_compliance_success_with_resources() -> None:
+    """Test response matches OpenAPI contract for success with resources."""
+    resources = [
+        ResourceCitation(title="DSPy Documentation", url="https://dspy.ai", summary="Official docs"),
     ]
-    answer = AgentAnswerWithCitations(
+    answer = AgentAnswerWithResources(
         answer="DSPy is a framework.",
         query="What is DSPy?",
-        citations=citations,
+        resources=resources,
     )
     data = answer.model_dump()
 
@@ -204,10 +204,10 @@ def test_contract_compliance_success_with_citations() -> None:
     assert "answer" in data
     assert "query" in data
     assert "meta" in data
-    assert "citations" in data
+    assert "resources" in data
     assert data["meta"]["experimental"] is True
-    assert isinstance(data["citations"], list)
-    assert len(data["citations"]) == 1
+    assert isinstance(data["resources"], list)
+    assert len(data["resources"]) == 1
 
 
 def test_contract_compliance_error_response() -> None:

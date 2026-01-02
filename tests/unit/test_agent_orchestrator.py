@@ -146,7 +146,7 @@ def test_agent_run_with_results(agent: ReACTAgent, mock_nl_search_service: Magic
     mock_prediction.answer = "Here is a test answer about hiking."
     agent.react_agent.return_value = mock_prediction
 
-    # Mock search for citations
+    # Mock search for resources
     from src.api.schemas import ResourceItem
 
     mock_item = ResourceItem(
@@ -168,10 +168,10 @@ def test_agent_run_with_results(agent: ReACTAgent, mock_nl_search_service: Magic
     assert result["meta"]["experimental"] is True
 
 
-def test_agent_run_with_citations(
+def test_agent_run_with_resources(
     agent: ReACTAgent, mock_nl_search_service: MagicMock, mock_link_verifier: MagicMock
 ) -> None:
-    """Test agent includes citations when requested."""
+    """Test agent includes resources when requested."""
     from src.api.schemas import ResourceItem
 
     # Mock ReAct prediction
@@ -179,7 +179,7 @@ def test_agent_run_with_citations(
     mock_prediction.answer = "Here is information about hiking."
     agent.react_agent.return_value = mock_prediction
 
-    # Mock search results for citations
+    # Mock search results for resources
     mock_item = ResourceItem(
         uuid="test-uuid",
         name="Hiking Guide",
@@ -195,17 +195,17 @@ def test_agent_run_with_citations(
     # Run agent with sources
     result = agent.run("What is hiking?", include_sources=True)
 
-    # Verify citations
-    assert "citations" in result
-    assert len(result["citations"]) == 1
-    assert result["citations"][0]["title"] == "Hiking Guide"
-    assert result["citations"][0]["url"] == "/resources/test-uuid"
+    # Verify resources
+    assert "resources" in result
+    assert len(result["resources"]) == 1
+    assert result["resources"][0]["title"] == "Hiking Guide"
+    assert result["resources"][0]["url"] == "/resources/test-uuid"
 
 
-def test_agent_run_citations_only_valid(
+def test_agent_run_resources_only_valid(
     agent: ReACTAgent, mock_nl_search_service: MagicMock, mock_link_verifier: MagicMock
 ) -> None:
-    """Test agent only includes validated citations."""
+    """Test agent only includes validated resources."""
     from src.api.schemas import ResourceItem
 
     # Mock ReAct prediction
@@ -241,7 +241,7 @@ def test_agent_run_citations_only_valid(
     # Run agent with sources
     result = agent.run("test query", include_sources=True)
 
-    # Verify only valid citation included
-    assert "citations" in result
-    assert len(result["citations"]) == 1
-    assert result["citations"][0]["title"] == "Valid Resource"
+    # Verify only valid resource included
+    assert "resources" in result
+    assert len(result["resources"]) == 1
+    assert result["resources"][0]["title"] == "Valid Resource"

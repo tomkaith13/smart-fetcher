@@ -249,7 +249,7 @@ async def nl_search(
     description=(
         "Experimental endpoint that runs a ReACT-style agent using NL search and "
         "resource validation tools. Returns only the final answer; tool traces are "
-        "internal-only. Citations included only when explicitly requested."
+        "internal-only. Resource citations included only when explicitly requested."
     ),
 )
 async def run_experimental_agent(request: Request) -> dict[str, Any]:

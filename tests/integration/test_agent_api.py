@@ -57,12 +57,12 @@ def test_agent_endpoint_basic_query(client: TestClient) -> None:
         assert "query" in data
         assert "meta" in data
         assert data["meta"]["experimental"] is True
-        # Should not have citations by default
-        assert "citations" not in data or len(data.get("citations", [])) == 0
+        # Should not have resources by default
+        assert "resources" not in data or len(data.get("resources", [])) == 0
 
 
 def test_agent_endpoint_with_include_sources_false(client: TestClient) -> None:
-    """Test agent endpoint without citations when include_sources=false."""
+    """Test agent endpoint without resources when include_sources=false."""
     response = client.post(
         "/experimental/agent",
         json={
@@ -73,12 +73,12 @@ def test_agent_endpoint_with_include_sources_false(client: TestClient) -> None:
 
     if response.status_code == 200:
         data = response.json()
-        # Should not have citations
-        assert "citations" not in data or len(data.get("citations", [])) == 0
+        # Should not have resources
+        assert "resources" not in data or len(data.get("resources", [])) == 0
 
 
 def test_agent_endpoint_with_include_sources_true(client: TestClient) -> None:
-    """Test agent endpoint includes citations when include_sources=true."""
+    """Test agent endpoint includes resources when include_sources=true."""
     response = client.post(
         "/experimental/agent",
         json={
@@ -89,13 +89,13 @@ def test_agent_endpoint_with_include_sources_true(client: TestClient) -> None:
 
     if response.status_code == 200:
         data = response.json()
-        # May have citations if results found
-        # If citations present, verify structure
-        if "citations" in data:
-            assert isinstance(data["citations"], list)
-            for citation in data["citations"]:
-                assert "title" in citation
-                assert "url" in citation
+        # May have resources if results found
+        # If resources present, verify structure
+        if "resources" in data:
+            assert isinstance(data["resources"], list)
+            for resource in data["resources"]:
+                assert "title" in resource
+                assert "url" in resource
 
 
 def test_agent_endpoint_custom_max_tokens(client: TestClient) -> None:
