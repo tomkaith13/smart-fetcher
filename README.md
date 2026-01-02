@@ -75,7 +75,7 @@ curl -s -X POST "http://localhost:8000/experimental/agent" \
   -d '{"query": "What is DSPy and how does it help with LLM tooling?"}' | jq
 ```
 
-Request with validated sources/citations:
+Request with validated sources/resources:
 
 ```bash
 curl -s -X POST "http://localhost:8000/experimental/agent" \
@@ -87,11 +87,11 @@ curl -s -X POST "http://localhost:8000/experimental/agent" \
 - Uses `gpt-oss:20b` model via Ollama by default
 - Automatically calls NL search and resource validation tools
 - Returns only the final answer (tool traces are logged internally)
-- Includes citations only when `include_sources=true`
+- Includes resource citations only when `include_sources=true`
 - Provides helpful limitation messages when evidence is insufficient
 
 **Response Structure**:
-- Success: `{answer, query, meta: {experimental: true}, citations?: [...]}`
+- Success: `{answer, query, meta: {experimental: true}, resources?: [...]}`
 - Error: `{error, code, query}`
 
 For more details, see [specs/005-react-agent-endpoint/quickstart.md](specs/005-react-agent-endpoint/quickstart.md).

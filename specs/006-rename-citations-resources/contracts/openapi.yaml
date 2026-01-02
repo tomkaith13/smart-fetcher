@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Smart Fetcher Experimental ReACT Agent API
   version: 0.2.0
-  description: Experimental endpoint to run a ReACT-style agent using NL search and resource validation tools. Updated to use "resources" terminology.
+  description: Experimental endpoint to run a ReACT-style agent using NL search and resource validation tools. Updated to use "resources" terminology instead of "citations".
 servers:
   - url: http://localhost:8000
 paths:
@@ -80,25 +80,31 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/ResourceCitation'
+              description: List of validated resource citations used to generate the answer
     ResourceCitation:
       type: object
       required: [title, url]
       properties:
         title:
           type: string
+          description: Human-readable title of the cited resource
         url:
           type: string
           format: uri
+          description: URL/path to access the cited resource
         summary:
           type: string
+          description: Brief description of the resource content
     ErrorResponse:
       type: object
       required: [error, code, query]
       properties:
         error:
           type: string
+          description: Human-readable error message
         code:
           type: string
-          enum: [TOOL_TIMEOUT, INTERNAL_ERROR]
+          description: Machine-readable error code
         query:
           type: string
+          description: Original query that caused the error
