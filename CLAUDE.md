@@ -56,6 +56,8 @@ This project requires Python 3.13+ (specified in [.python-version](.python-versi
 ## Active Technologies
 - Python 3.13 (specified in .python-version) + FastAPI, DSPy, Ollama (gpt-oss:20b), uvicorn, pydantic (001-dspy-tag-fetcher)
 - In-memory (list/dict of Resource objects, deterministic seed) (001-dspy-tag-fetcher)
+- Python 3.13 + FastAPI 0.115+, DSPy 2.5+, Pydantic 2.10+ (007-bool-resource-validation)
+- In-memory (deterministic seed-based resource generation) (007-bool-resource-validation)
 
 ## Recent Changes
 - 001-dspy-tag-fetcher: Added Python 3.13 (specified in .python-version) + FastAPI, DSPy, Ollama (gpt-oss:20b), uvicorn, pydantic
