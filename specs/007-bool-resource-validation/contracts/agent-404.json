@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent 404 Error Response",
+  "description": "HTTP 404 response when all resources fail validation in /experimental/agent endpoint",
+  "type": "object",
+  "required": ["error", "code", "query"],
+  "properties": {
+    "error": {
+      "type": "string",
+      "const": "no valid resources found",
+      "description": "Human-readable error message"
+    },
+    "code": {
+      "type": "string",
+      "const": "NO_VALID_RESOURCES",
+      "description": "Machine-readable error code"
+    },
+    "query": {
+      "type": "string",
+      "description": "Original user query that was processed"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "error": "no valid resources found",
+      "code": "NO_VALID_RESOURCES",
+      "query": "show me resources about quantum computing"
+    }
+  ]
+}

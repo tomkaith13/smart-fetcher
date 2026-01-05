@@ -191,7 +191,9 @@ def test_contract_compliance_success_no_resources() -> None:
 def test_contract_compliance_success_with_resources() -> None:
     """Test response matches OpenAPI contract for success with resources."""
     resources = [
-        ResourceCitation(title="DSPy Documentation", url="https://dspy.ai", summary="Official docs"),
+        ResourceCitation(
+            title="DSPy Documentation", url="https://dspy.ai", summary="Official docs"
+        ),
     ]
     answer = AgentAnswerWithResources(
         answer="DSPy is a framework.",
@@ -224,3 +226,30 @@ def test_contract_compliance_error_response() -> None:
     assert "code" in data
     assert "query" in data
     assert data["code"] in ["TOOL_TIMEOUT", "INTERNAL_ERROR"]
+
+
+def test_agent_404_no_valid_resources() -> None:
+    """Test HTTP 404 response schema when all resources fail validation.
+
+    Contract: When include_sources=true and all resources fail validation,
+    the endpoint returns HTTP 404 with specific error structure.
+    """
+    from src.api.schemas import AgentErrorCode
+
+    error = AgentErrorResponse(
+        error="no valid resources found",
+        code=AgentErrorCode.NO_VALID_RESOURCES,
+        query="show me resources about quantum computing",
+    )
+    data = error.model_dump()
+
+    # Verify required fields
+    assert "error" in data
+    assert "code" in data
+    assert "query" in data
+
+    # Verify specific values for 404 case
+    assert data["error"] == "no valid resources found"
+    assert data["code"] == "NO_VALID_RESOURCES"
+    assert isinstance(data["query"], str)
+    assert len(data["query"]) > 0

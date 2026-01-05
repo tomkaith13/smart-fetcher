@@ -90,8 +90,9 @@ def test_validate_resource_tool_success(agent: ReACTAgent, mock_link_verifier: M
     agent.current_session_id = "test-session"
     result = agent._validate_resource_tool("/resources/test-uuid")
 
-    # Verify
-    assert "valid" in result.lower()
+    # Verify - now returns bool instead of string
+    assert result is True
+    assert isinstance(result, bool)
 
 
 def test_validate_resource_tool_invalid(agent: ReACTAgent, mock_link_verifier: MagicMock) -> None:
@@ -102,8 +103,37 @@ def test_validate_resource_tool_invalid(agent: ReACTAgent, mock_link_verifier: M
     # Call tool
     result = agent._validate_resource_tool("/resources/bad-uuid")
 
-    # Verify (case-insensitive check)
-    assert "invalid" in result.lower()
+    # Verify - now returns bool instead of string
+    assert result is False
+    assert isinstance(result, bool)
+
+
+def test_validate_resource_tool_returns_bool(
+    agent: ReACTAgent, mock_link_verifier: MagicMock
+) -> None:
+    """Test that validate_resource_tool returns boolean instead of string.
+
+    US1: After modification, _validate_resource_tool should return bool
+    for cleaner filtering logic.
+    """
+    # Mock validation - valid case
+    mock_link_verifier.verify_link.return_value = True
+    agent.current_session_id = "test-session"
+
+    result = agent._validate_resource_tool("/resources/valid-uuid")
+
+    # Should return True (boolean)
+    assert isinstance(result, bool)
+    assert result is True
+
+    # Mock validation - invalid case
+    mock_link_verifier.verify_link.return_value = False
+
+    result = agent._validate_resource_tool("/resources/invalid-uuid")
+
+    # Should return False (boolean)
+    assert isinstance(result, bool)
+    assert result is False
 
 
 def test_agent_run_no_lm_available(
@@ -245,3 +275,53 @@ def test_agent_run_resources_only_valid(
     assert "resources" in result
     assert len(result["resources"]) == 1
     assert result["resources"][0]["title"] == "Valid Resource"
+
+
+def test_logging_failure_suppressed(
+    agent: ReACTAgent, mock_nl_search_service: MagicMock, mock_link_verifier: MagicMock
+) -> None:
+    """Test that logging failures do not block resource processing.
+
+    US2-AC4: Per FR-009, logging failures must be suppressed and not
+    affect resource filtering or response generation.
+    """
+    from unittest.mock import patch
+
+    from src.api.schemas import ResourceItem
+
+    # Mock ReAct prediction
+    mock_prediction = MagicMock()
+    mock_prediction.answer = "Test answer"
+    agent.react_agent.return_value = mock_prediction
+
+    # Mock search results
+    mock_item = ResourceItem(
+        uuid="test-uuid",
+        name="Test Resource",
+        summary="Test summary",
+        link="/resources/test-uuid",
+        tags=["test"],
+    )
+    mock_nl_search_service.search.return_value = (
+        [mock_item],
+        None,
+        [],
+        "test reasoning",
+    )
+
+    # Mock link validation to fail (triggers hallucination logging)
+    mock_link_verifier.verify_link.return_value = False
+
+    # Mock the logger to raise an exception when logging
+    import logging
+
+    test_logger = logging.getLogger("src.services.agent.react_agent")
+    with patch.object(test_logger, "warning", side_effect=Exception("Logging system failure")):
+        # Run agent with sources - should not raise exception despite logging failure
+        result = agent.run("test query", include_sources=True)
+
+        # Should return answer with empty resources (triggering 404 in routes)
+        # But the logging exception should not propagate
+        assert "answer" in result
+        # Resources should be empty since all validation failed
+        assert "resources" not in result or len(result.get("resources", [])) == 0
