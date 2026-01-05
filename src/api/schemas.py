@@ -196,6 +196,7 @@ class AgentErrorCode:
 
     TOOL_TIMEOUT = "TOOL_TIMEOUT"
     INTERNAL_ERROR = "INTERNAL_ERROR"
+    NO_VALID_RESOURCES = "NO_VALID_RESOURCES"
 
 
 class ResourceCitation(BaseModel):
@@ -289,7 +290,9 @@ class AgentAnswerWithResources(AgentAnswer):
         resources: List of validated resource citations.
     """
 
-    resources: list[ResourceCitation] = Field(default_factory=list, description="Validated resource citations")
+    resources: list[ResourceCitation] = Field(
+        default_factory=list, description="Validated resource citations"
+    )
 
     model_config = {
         "json_schema_extra": {

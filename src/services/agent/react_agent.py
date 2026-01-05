@@ -1,5 +1,6 @@
 """ReACT-style agent using DSPy with NL search and resource validation tools."""
 
+import logging
 import os
 import uuid
 from typing import Any
@@ -10,6 +11,9 @@ from src.api.schemas import AGENT_TIMEOUT_SEC, AgentErrorCode, ResourceCitation
 from src.services.nl_search_service import NLSearchService
 from src.utils.agent_logger import get_agent_logger
 from src.utils.link_verifier import LinkVerifier
+
+# Get a standard Python logger for hallucination detection
+hallucination_logger = logging.getLogger(__name__)
 
 
 class QASignature(dspy.Signature):  # type: ignore[misc]
@@ -133,14 +137,17 @@ class ReACTAgent:
             )
             return f"Error searching resources: {e}"
 
-    def _validate_resource_tool(self, url: str) -> str:
+    def _validate_resource_tool(self, url: str) -> bool:
         """Tool function for resource validation (called by DSPy ReAct).
 
         Args:
             url: Resource URL to validate.
 
         Returns:
-            String describing validation result.
+            Boolean: True if resource is valid, False if hallucinated/invalid.
+
+        Raises:
+            Exception: Logged as ERROR, resource treated as invalid (returns False).
         """
         session_id = self.current_session_id or "unknown"
         try:
@@ -151,7 +158,7 @@ class ReACTAgent:
                 params={"url": url},
                 result_summary=f"Valid: {is_valid}",
             )
-            return f"Resource {url} is {'valid' if is_valid else 'invalid or unreachable'}"
+            return is_valid
         except Exception as e:
             self.logger.log_tool_action(
                 agent_session_id=session_id,
@@ -159,7 +166,8 @@ class ReACTAgent:
                 params={"url": url},
                 result_summary=f"Error: {e}",
             )
-            return f"Error validating resource: {e}"
+            # FR-006: Exception handling - treat as invalid
+            return False
 
     def run(
         self,
@@ -203,16 +211,50 @@ class ReACTAgent:
                 # The agent's tool calls are logged, we can extract resource citations from there
                 # For now, do a simple search to get resources mentioned in the answer
                 resource_items, _, _, _ = self.nl_search_service.search(query)
+
+                # FR-002, FR-005: Filter resources using boolean validation
+                validated_resources: list[ResourceCitation] = []
                 for item in resource_items[:3]:  # Top 3 results
-                    is_valid = self.link_verifier.verify_link(item.link)
-                    if is_valid:
-                        resources.append(
-                            ResourceCitation(
-                                title=item.name,
-                                url=item.link,
-                                summary=item.summary,
+                    try:
+                        is_valid = self.link_verifier.verify_link(item.link)
+
+                        if not is_valid:
+                            # FR-003: Log hallucination at WARNING level
+                            try:
+                                hallucination_logger.warning(
+                                    f"Hallucination detected - invalid resource: {item.link}",
+                                    extra={
+                                        "url": item.link,
+                                        "title": item.name,
+                                        "query": query,
+                                        "session_id": session_id,
+                                    },
+                                )
+                            except Exception:
+                                # FR-009: Suppress logging failures
+                                pass
+                        else:
+                            # FR-007: Preserve order of valid resources
+                            validated_resources.append(
+                                ResourceCitation(
+                                    title=item.name,
+                                    url=item.link,
+                                    summary=item.summary,
+                                )
                             )
-                        )
+                    except Exception as e:
+                        # FR-006: Validation exception - treat as invalid, log at ERROR
+                        try:
+                            hallucination_logger.error(
+                                f"Validation exception for {item.link}: {e}",
+                                extra={"url": item.link, "query": query, "session_id": session_id},
+                                exc_info=True,
+                            )
+                        except Exception:
+                            # FR-009: Suppress logging failures
+                            pass
+
+                resources = validated_resources
 
             self.logger.log_session_end(session_id, "success", answer)
 

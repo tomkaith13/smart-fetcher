@@ -285,4 +285,15 @@ async def run_experimental_agent(request: Request) -> dict[str, Any]:
         status_code = 504 if result["code"] == AgentErrorCode.TOOL_TIMEOUT else 500
         raise HTTPException(status_code=status_code, detail=result)
 
+    # FR-008: Return 404 if include_sources=true but all resources failed validation
+    if agent_request.include_sources and "resources" not in result:
+        raise HTTPException(
+            status_code=404,
+            detail=ErrorResponse(
+                error="no valid resources found",
+                code=AgentErrorCode.NO_VALID_RESOURCES,
+                query=agent_request.query,
+            ).model_dump(),
+        )
+
     return result

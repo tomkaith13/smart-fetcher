@@ -24,9 +24,9 @@
 
 **Purpose**: Project initialization and verification of existing infrastructure
 
-- [ ] T001 Verify Python 3.13 environment and uv package manager installed
-- [ ] T002 [P] Verify existing test structure (unit/integration/contract directories)
-- [ ] T003 [P] Verify quality gates are executable (pytest, ruff, mypy)
+- [X] T001 Verify Python 3.13 environment and uv package manager installed
+- [X] T002 [P] Verify existing test structure (unit/integration/contract directories)
+- [X] T003 [P] Verify quality gates are executable (pytest, ruff, mypy)
 
 ---
 
@@ -36,9 +36,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Add NO_VALID_RESOURCES error code to AgentErrorCode enum in src/api/schemas.py
-- [ ] T005 [P] Verify ErrorResponse schema supports 404 error cases in src/api/schemas.py
-- [ ] T006 [P] Verify LinkVerifier.verify_link exists and returns bool in src/utils/link_verifier.py
+- [X] T004 Add NO_VALID_RESOURCES error code to AgentErrorCode enum in src/api/schemas.py
+- [X] T005 [P] Verify ErrorResponse schema supports 404 error cases in src/api/schemas.py
+- [X] T006 [P] Verify LinkVerifier.verify_link exists and returns bool in src/utils/link_verifier.py
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -54,22 +54,22 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T007 [P] [US1] Create contract test for HTTP 404 response schema in tests/contract/test_agent_contract.py::test_agent_404_no_valid_resources
-- [ ] T008 [P] [US1] Create integration test for mixed valid/invalid resources in tests/integration/test_agent_api.py::test_agent_filters_invalid_resources
-- [ ] T009 [P] [US1] Create integration test for all resources invalid (404) in tests/integration/test_agent_api.py::test_agent_all_invalid_returns_404
-- [ ] T010 [P] [US1] Create integration test for all resources valid in tests/integration/test_agent_api.py::test_agent_all_valid_included
-- [ ] T011 [P] [US1] Create unit test for boolean validation return in tests/unit/test_agent_orchestrator.py::test_validate_resource_tool_returns_bool
+- [X] T007 [P] [US1] Create contract test for HTTP 404 response schema in tests/contract/test_agent_contract.py::test_agent_404_no_valid_resources
+- [X] T008 [P] [US1] Create integration test for mixed valid/invalid resources in tests/integration/test_agent_api.py::test_agent_filters_invalid_resources
+- [X] T009 [P] [US1] Create integration test for all resources invalid (404) in tests/integration/test_agent_api.py::test_agent_all_invalid_returns_404
+- [X] T010 [P] [US1] Create integration test for all resources valid in tests/integration/test_agent_api.py::test_agent_all_valid_included
+- [X] T011 [P] [US1] Create unit test for boolean validation return in tests/unit/test_agent_orchestrator.py::test_validate_resource_tool_returns_bool
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Modify _validate_resource_tool to return bool instead of string in src/services/agent/react_agent.py:136-162
-- [ ] T013 [US1] Update _validate_resource_tool docstring with new return type and exception behavior in src/services/agent/react_agent.py:136-162
-- [ ] T014 [US1] Add import for logging module at top of src/api/routes.py
-- [ ] T015 [US1] Implement resource filtering logic in run_experimental_agent function in src/api/routes.py:255-288
-- [ ] T016 [US1] Add validated_resources list and validation loop in src/api/routes.py (after line 277)
-- [ ] T017 [US1] Add HTTP 404 response for all-resources-invalid case in src/api/routes.py (check validated_resources list)
-- [ ] T018 [US1] Ensure resource order preservation per FR-007 in filtering loop in src/api/routes.py
-- [ ] T019 [US1] Run all User Story 1 tests and verify they pass: uv run pytest tests/unit/test_agent_orchestrator.py::test_validate_resource_tool_returns_bool tests/integration/test_agent_api.py::test_agent_filters_invalid_resources tests/integration/test_agent_api.py::test_agent_all_invalid_returns_404 tests/integration/test_agent_api.py::test_agent_all_valid_included tests/contract/test_agent_contract.py::test_agent_404_no_valid_resources
+- [X] T012 [US1] Modify _validate_resource_tool to return bool instead of string in src/services/agent/react_agent.py:136-162
+- [X] T013 [US1] Update _validate_resource_tool docstring with new return type and exception behavior in src/services/agent/react_agent.py:136-162
+- [X] T014 [US1] Add import for logging module at top of src/api/routes.py
+- [X] T015 [US1] Implement resource filtering logic in run_experimental_agent function in src/api/routes.py:255-288
+- [X] T016 [US1] Add validated_resources list and validation loop in src/api/routes.py (after line 277)
+- [X] T017 [US1] Add HTTP 404 response for all-resources-invalid case in src/api/routes.py (check validated_resources list)
+- [X] T018 [US1] Ensure resource order preservation per FR-007 in filtering loop in src/api/routes.py
+- [X] T019 [US1] Run all User Story 1 tests and verify they pass: uv run pytest tests/unit/test_agent_orchestrator.py::test_validate_resource_tool_returns_bool tests/integration/test_agent_api.py::test_agent_filters_invalid_resources tests/integration/test_agent_api.py::test_agent_all_invalid_returns_404 tests/integration/test_agent_api.py::test_agent_all_valid_included tests/contract/test_agent_contract.py::test_agent_404_no_valid_resources
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - API consumers receive only valid resources, with HTTP 404 when all fail validation
 
@@ -83,21 +83,21 @@
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Create integration test for WARNING level logging in tests/integration/test_agent_api.py::test_agent_logs_hallucinations_at_warning_level
-- [ ] T021 [P] [US2] Create integration test for multiple hallucinations logged separately in tests/integration/test_agent_api.py::test_agent_logs_multiple_hallucinations
-- [ ] T022 [P] [US2] Create integration test for validation exception logging at ERROR level in tests/integration/test_agent_api.py::test_agent_logs_validation_exceptions
-- [ ] T023 [P] [US2] Create unit test for logging failure suppression in tests/unit/test_agent_orchestrator.py::test_logging_failure_suppressed
+- [X] T020 [P] [US2] Create integration test for WARNING level logging in tests/integration/test_agent_api.py::test_agent_logs_hallucinations_at_warning_level
+- [X] T021 [P] [US2] Create integration test for multiple hallucinations logged separately in tests/integration/test_agent_api.py::test_agent_logs_multiple_hallucinations
+- [X] T022 [P] [US2] Create integration test for validation exception logging at ERROR level in tests/integration/test_agent_api.py::test_agent_logs_validation_exceptions
+- [X] T023 [P] [US2] Create unit test for logging failure suppression in tests/unit/test_agent_orchestrator.py::test_logging_failure_suppressed
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Add WARNING level logging for is_valid==False in src/api/routes.py filtering loop (within try block)
-- [ ] T025 [US2] Add structured logging with extra={url, title, query} for hallucinations in src/api/routes.py
-- [ ] T026 [US2] Wrap hallucination logging in try/except to suppress failures (FR-009) in src/api/routes.py
-- [ ] T027 [US2] Add ERROR level logging for validation exceptions with exc_info=True in src/api/routes.py (except block)
-- [ ] T028 [US2] Add structured logging with extra={url, query} for exceptions in src/api/routes.py
-- [ ] T029 [US2] Wrap exception logging in try/except to suppress failures (FR-009) in src/api/routes.py
-- [ ] T030 [US2] Verify no hallucination logs when all resources valid in tests/integration/test_agent_api.py::test_no_logs_when_all_valid
-- [ ] T031 [US2] Run all User Story 2 tests and verify they pass: uv run pytest tests/integration/test_agent_api.py::test_agent_logs_hallucinations_at_warning_level tests/integration/test_agent_api.py::test_agent_logs_multiple_hallucinations tests/integration/test_agent_api.py::test_agent_logs_validation_exceptions tests/unit/test_agent_orchestrator.py::test_logging_failure_suppressed tests/integration/test_agent_api.py::test_no_logs_when_all_valid
+- [X] T024 [US2] Add WARNING level logging for is_valid==False in src/api/routes.py filtering loop (within try block)
+- [X] T025 [US2] Add structured logging with extra={url, title, query} for hallucinations in src/api/routes.py
+- [X] T026 [US2] Wrap hallucination logging in try/except to suppress failures (FR-009) in src/api/routes.py
+- [X] T027 [US2] Add ERROR level logging for validation exceptions with exc_info=True in src/api/routes.py (except block)
+- [X] T028 [US2] Add structured logging with extra={url, query} for exceptions in src/api/routes.py
+- [X] T029 [US2] Wrap exception logging in try/except to suppress failures (FR-009) in src/api/routes.py
+- [X] T030 [US2] Verify no hallucination logs when all resources valid in tests/integration/test_agent_api.py::test_no_logs_when_all_valid
+- [X] T031 [US2] Run all User Story 2 tests and verify they pass: uv run pytest tests/integration/test_agent_api.py::test_agent_logs_hallucinations_at_warning_level tests/integration/test_agent_api.py::test_agent_logs_multiple_hallucinations tests/integration/test_agent_api.py::test_agent_logs_validation_exceptions tests/unit/test_agent_orchestrator.py::test_logging_failure_suppressed tests/integration/test_agent_api.py::test_no_logs_when_all_valid
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - filtering works correctly AND all hallucinations are properly logged
 
@@ -107,15 +107,15 @@
 
 **Purpose**: Verification, testing, and quality assurance across all stories
 
-- [ ] T032 [P] Run full test suite to ensure no regressions: uv run pytest
-- [ ] T033 [P] Run ruff linting and fix any errors: uv run ruff check .
-- [ ] T034 [P] Run mypy type checking and fix any errors: uv run mypy src/
-- [ ] T035 [P] Run ruff formatting check: uv run ruff format --check .
-- [ ] T036 Verify all existing tests still pass (no regression): uv run pytest tests/
-- [ ] T037 [P] Verify experimental endpoint-only changes (no other endpoints modified)
-- [ ] T038 [P] Manual testing per quickstart.md scenarios (optional, for validation)
-- [ ] T039 Review and update CLAUDE.md if needed with any new patterns discovered
-- [ ] T040 Final validation: Run complete quality gate sequence (pytest && ruff check . && mypy src/ && ruff format --check .)
+- [X] T032 [P] Run full test suite to ensure no regressions: uv run pytest
+- [X] T033 [P] Run ruff linting and fix any errors: uv run ruff check .
+- [X] T034 [P] Run mypy type checking and fix any errors: uv run mypy src/
+- [X] T035 [P] Run ruff formatting check: uv run ruff format --check .
+- [X] T036 Verify all existing tests still pass (no regression): uv run pytest tests/
+- [X] T037 [P] Verify experimental endpoint-only changes (no other endpoints modified)
+- [X] T038 [P] Manual testing per quickstart.md scenarios (optional, for validation)
+- [X] T039 Review and update CLAUDE.md if needed with any new patterns discovered
+- [X] T040 Final validation: Run complete quality gate sequence (pytest && ruff check . && mypy src/ && ruff format --check .)
 
 ---
 
