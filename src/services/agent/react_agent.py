@@ -220,19 +220,15 @@ class ReACTAgent:
 
                         if not is_valid:
                             # FR-003: Log hallucination at WARNING level
-                            try:
-                                hallucination_logger.warning(
-                                    f"Hallucination detected - invalid resource: {item.link}",
-                                    extra={
-                                        "url": item.link,
-                                        "title": item.name,
-                                        "query": query,
-                                        "session_id": session_id,
-                                    },
-                                )
-                            except Exception:
-                                # FR-009: Suppress logging failures
-                                pass
+                            hallucination_logger.warning(
+                                f"Hallucination detected - invalid resource: {item.link}",
+                                extra={
+                                    "url": item.link,
+                                    "title": item.name,
+                                    "query": query,
+                                    "session_id": session_id,
+                                },
+                            )
                         else:
                             # FR-007: Preserve order of valid resources
                             validated_resources.append(
@@ -244,15 +240,11 @@ class ReACTAgent:
                             )
                     except Exception as e:
                         # FR-006: Validation exception - treat as invalid, log at ERROR
-                        try:
-                            hallucination_logger.error(
-                                f"Validation exception for {item.link}: {e}",
-                                extra={"url": item.link, "query": query, "session_id": session_id},
-                                exc_info=True,
-                            )
-                        except Exception:
-                            # FR-009: Suppress logging failures
-                            pass
+                        hallucination_logger.error(
+                            f"Validation exception for {item.link}: {e}",
+                            extra={"url": item.link, "query": query, "session_id": session_id},
+                            exc_info=True,
+                        )
 
                 resources = validated_resources
 
