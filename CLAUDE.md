@@ -30,6 +30,10 @@ uv add <package-name>
 uv add --dev <package-name>
 ```
 
+## Git Workflow
+
+**All tasks from any plan MUST start with their own git branch if the current branch is main.**
+
 ## Project Structure
 
 Currently a single-file application with [main.py](main.py) as the entry point.
