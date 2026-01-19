@@ -1,12 +1,12 @@
 """Semantic search service using DSPy with Ollama for tag matching."""
 
 import logging
-import os
 import subprocess
 from typing import Literal
 
 import dspy
 
+from src.config import settings
 from src.models.resource import Resource
 from src.services.resource_store import ResourceStore
 
@@ -40,16 +40,15 @@ class SemanticSearchService:
         self.resource_store = resource_store
 
         # Configuration from environment or defaults
-        self.ollama_host: str = (
-            ollama_host if ollama_host else os.getenv("OLLAMA_HOST") or "http://localhost:11434"
-        )
-        self.model: str = model if model else os.getenv("OLLAMA_MODEL") or "gpt-oss:20b"
+        self.ollama_host: str = ollama_host if ollama_host else settings.ollama_host
+        self.model: str = model if model else settings.ollama_model
 
         # Initialize DSPy with Ollama
         self.lm = dspy.LM(
             f"ollama_chat/{self.model}",
             api_base=self.ollama_host,
             api_key="",
+            cache=settings.dspy_cache_enabled,
         )
         dspy.configure(lm=self.lm)
 

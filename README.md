@@ -29,6 +29,25 @@ For more details on Ollama health monitoring, see [specs/002-ollama-health-check
 
 For NL UUID search feature details, see [specs/004-nl-uuid-search/](specs/004-nl-uuid-search/).
 
+### DSPy Caching
+
+DSPy caching is enabled by default with a project-local cache directory. Configure via:
+
+- `DSPY_CACHE_ENABLED` - Enable/disable caching (default: `true`)
+- `DSPY_CACHE_DIR` - Cache directory (default: `./.dspy_cache`)
+
+To disable caching for development:
+
+```bash
+echo "DSPY_CACHE_ENABLED=false" >> .env
+```
+
+Clear cache:
+
+```bash
+rm -rf ./.dspy_cache
+```
+
 ## Quick Start
 
 ```bash

@@ -17,7 +17,12 @@ uv sync
 
 **Run the application:**
 ```bash
-uv run python main.py
+make start
+```
+
+You can customize the host, port, and log level:
+```bash
+make start HOST=127.0.0.1 PORT=8080 LOG_LEVEL=debug
 ```
 
 **Add a new dependency:**
@@ -44,14 +49,21 @@ Currently a single-file application with [main.py](main.py) as the entry point.
 
 Key principles to follow:
 1. **Code Quality**: Type annotations required, functions <50 lines, ruff linting, comprehensive docstrings
-2. **Testing Standards**: Comprehensive test coverage, organized in unit/integration/contract directories
+2. **Testing Standards**: Comprehensive test coverage, organized in unit/integration/contract directories. **Do not add unnecessary tests - stick to functional requirements alone.**
 3. **UX Consistency**: Consistent JSON structures, actionable error messages, proper HTTP codes
 
 Quality gates that MUST pass before merge:
-- `uv run pytest` (all tests passing)
-- `uv run ruff check .` (zero errors)
-- `uv run mypy src/` (zero type errors)
-- `uv run ruff format --check .` (zero formatting violations)
+- `make test` (all unit and contract tests passing)
+- `make lint` (zero linting errors)
+- `make check` (zero type errors)
+- `make format` followed by checking for uncommitted changes (zero formatting violations)
+
+Available test targets:
+- `make test` - Run unit and contract tests (fast)
+- `make test-all` - Run all tests including integration tests
+- `make test-unit` - Run only unit tests
+- `make test-integration` - Run only integration tests
+- `make test-contract` - Run only contract tests
 
 ## Python Version
 

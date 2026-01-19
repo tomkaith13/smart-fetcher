@@ -172,6 +172,7 @@ class TestSemanticSearchService:
         service = SemanticSearchService(resource_store=mock_resource_store)
         assert service.check_connection() is False
 
+    @patch("src.services.semantic_search.settings")
     @patch("src.services.semantic_search.dspy.LM")
     @patch("src.services.semantic_search.dspy.configure")
     @patch("src.services.semantic_search.dspy.ChainOfThought")
@@ -180,12 +181,13 @@ class TestSemanticSearchService:
         mock_cot: MagicMock,
         mock_configure: MagicMock,
         mock_lm: MagicMock,
+        mock_settings: MagicMock,
         mock_resource_store: ResourceStore,
-        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        """Test that service reads configuration from environment variables."""
-        monkeypatch.setenv("OLLAMA_HOST", "http://custom-host:11434")
-        monkeypatch.setenv("OLLAMA_MODEL", "custom-model")
+        """Test that service reads configuration from centralized settings."""
+        mock_settings.ollama_host = "http://custom-host:11434"
+        mock_settings.ollama_model = "custom-model"
+        mock_settings.dspy_cache_enabled = True
 
         service = SemanticSearchService(resource_store=mock_resource_store)
 
@@ -444,3 +446,51 @@ class TestSemanticSearchService:
                 service.find_matching("home")
 
             assert "not reachable" in str(exc_info.value)
+
+    @patch("src.services.semantic_search.settings")
+    @patch("src.services.semantic_search.dspy.LM")
+    @patch("src.services.semantic_search.dspy.configure")
+    @patch("src.services.semantic_search.dspy.ChainOfThought")
+    def test_cache_enabled_passed_to_dspy_lm(
+        self,
+        mock_cot: MagicMock,
+        mock_configure: MagicMock,
+        mock_lm: MagicMock,
+        mock_settings: MagicMock,
+        mock_resource_store: ResourceStore,
+    ) -> None:
+        """Test that cache=True is passed to dspy.LM when cache is enabled."""
+        mock_settings.dspy_cache_enabled = True
+        mock_settings.ollama_host = "http://localhost:11434"
+        mock_settings.ollama_model = "gpt-oss:20b"
+
+        _ = SemanticSearchService(resource_store=mock_resource_store)
+
+        # Verify dspy.LM was called with cache=True
+        mock_lm.assert_called_once()
+        call_kwargs = mock_lm.call_args.kwargs
+        assert call_kwargs["cache"] is True
+
+    @patch("src.services.semantic_search.settings")
+    @patch("src.services.semantic_search.dspy.LM")
+    @patch("src.services.semantic_search.dspy.configure")
+    @patch("src.services.semantic_search.dspy.ChainOfThought")
+    def test_cache_disabled_passed_to_dspy_lm(
+        self,
+        mock_cot: MagicMock,
+        mock_configure: MagicMock,
+        mock_lm: MagicMock,
+        mock_settings: MagicMock,
+        mock_resource_store: ResourceStore,
+    ) -> None:
+        """Test that cache=False is passed to dspy.LM when cache is disabled."""
+        mock_settings.dspy_cache_enabled = False
+        mock_settings.ollama_host = "http://localhost:11434"
+        mock_settings.ollama_model = "gpt-oss:20b"
+
+        _ = SemanticSearchService(resource_store=mock_resource_store)
+
+        # Verify dspy.LM was called with cache=False
+        mock_lm.assert_called_once()
+        call_kwargs = mock_lm.call_args.kwargs
+        assert call_kwargs["cache"] is False

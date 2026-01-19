@@ -1,13 +1,13 @@
 """FastAPI application entry point for smart-fetcher."""
 
 import logging
-import os
 from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
 
 from src.api.routes import router
+from src.config import settings
 from src.services.agent.react_agent import ReACTAgent
 from src.services.nl_search_service import NLSearchService
 from src.services.nl_tag_extractor import NLTagExtractor
@@ -17,13 +17,10 @@ from src.utils.link_verifier import LinkVerifier
 
 # Basic logging configuration; uvicorn can override, but this sets defaults.
 logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    level=settings.log_level.upper(),
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-# NL Search Configuration
-NL_SEARCH_DEFAULT_RESULT_CAP = int(os.getenv("NL_SEARCH_RESULT_CAP", "5"))
 
 
 @asynccontextmanager
@@ -33,6 +30,9 @@ async def lifespan(app: FastAPI) -> Any:
     Creates the ResourceStore and SemanticSearchService on startup,
     making them available to route handlers via app.state.
     """
+    # Configure DSPy cache before any DSPy LM initialization
+    settings.configure_dspy_cache()
+
     # Initialize on startup
     app.state.resource_store = ResourceStore()
     app.state.semantic_search = SemanticSearchService(resource_store=app.state.resource_store)
@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI) -> Any:
     app.state.nl_search_service = NLSearchService(
         extractor=app.state.nl_tag_extractor,
         resource_store=app.state.resource_store,
-        default_cap=NL_SEARCH_DEFAULT_RESULT_CAP,
+        default_cap=settings.nl_search_result_cap,
     )
 
     # Initialize experimental ReACT agent
