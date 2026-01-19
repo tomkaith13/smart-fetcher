@@ -325,3 +325,53 @@ def test_logging_failure_suppressed(
         assert "answer" in result
         # Resources should be empty since all validation failed
         assert "resources" not in result or len(result.get("resources", [])) == 0
+
+
+def test_cache_enabled_passed_to_dspy_lm(
+    mock_nl_search_service: MagicMock, mock_link_verifier: MagicMock
+) -> None:
+    """Test that cache=True is passed to dspy.LM when cache is enabled."""
+    with (
+        patch("src.services.agent.react_agent.settings") as mock_settings,
+        patch("dspy.LM") as mock_lm,
+        patch("dspy.configure"),
+        patch("dspy.ReAct"),
+    ):
+        mock_settings.dspy_cache_enabled = True
+        mock_settings.ollama_model = "gpt-oss:20b"
+        mock_settings.ollama_host = "http://localhost:11434"
+
+        _ = ReACTAgent(
+            nl_search_service=mock_nl_search_service,
+            link_verifier=mock_link_verifier,
+        )
+
+        # Verify dspy.LM was called with cache=True
+        mock_lm.assert_called_once()
+        call_kwargs = mock_lm.call_args.kwargs
+        assert call_kwargs["cache"] is True
+
+
+def test_cache_disabled_passed_to_dspy_lm(
+    mock_nl_search_service: MagicMock, mock_link_verifier: MagicMock
+) -> None:
+    """Test that cache=False is passed to dspy.LM when cache is disabled."""
+    with (
+        patch("src.services.agent.react_agent.settings") as mock_settings,
+        patch("dspy.LM") as mock_lm,
+        patch("dspy.configure"),
+        patch("dspy.ReAct"),
+    ):
+        mock_settings.dspy_cache_enabled = False
+        mock_settings.ollama_model = "gpt-oss:20b"
+        mock_settings.ollama_host = "http://localhost:11434"
+
+        _ = ReACTAgent(
+            nl_search_service=mock_nl_search_service,
+            link_verifier=mock_link_verifier,
+        )
+
+        # Verify dspy.LM was called with cache=False
+        mock_lm.assert_called_once()
+        call_kwargs = mock_lm.call_args.kwargs
+        assert call_kwargs["cache"] is False

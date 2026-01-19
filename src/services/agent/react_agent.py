@@ -1,13 +1,13 @@
 """ReACT-style agent using DSPy with NL search and resource validation tools."""
 
 import logging
-import os
 import uuid
 from typing import Any
 
 import dspy
 
 from src.api.schemas import AGENT_TIMEOUT_SEC, AgentErrorCode, ResourceCitation
+from src.config import settings
 from src.services.nl_search_service import NLSearchService
 from src.utils.agent_logger import get_agent_logger
 from src.utils.link_verifier import LinkVerifier
@@ -52,11 +52,13 @@ class ReACTAgent:
         self.current_session_id: str | None = None
 
         # Initialize DSPy with Ollama
-        model_name = model_name or os.getenv("OLLAMA_MODEL", "gpt-oss:20b")
-        ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        model_name = model_name or settings.ollama_model
+        ollama_host = settings.ollama_host
 
         try:
-            self.lm = dspy.LM(f"ollama/{model_name}", api_base=ollama_host)
+            self.lm = dspy.LM(
+                f"ollama/{model_name}", api_base=ollama_host, cache=settings.dspy_cache_enabled
+            )
             dspy.configure(lm=self.lm)
         except Exception as e:
             # Graceful fallback if Ollama unavailable

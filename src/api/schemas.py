@@ -1,14 +1,12 @@
 """Request and response schemas for the smart-fetcher API."""
 
-import os
-
 from pydantic import BaseModel, Field, field_validator
 
+from src.config import settings
 from src.models.resource import Resource
 
 # Agent Configuration Constants
-AGENT_TIMEOUT_SEC = int(os.getenv("AGENT_TIMEOUT_SEC", "5"))
-AGENT_MAX_TOKENS = int(os.getenv("AGENT_MAX_TOKENS", "1024"))
+AGENT_TIMEOUT_SEC = settings.agent_timeout_sec
 
 
 class SearchResponse(BaseModel):
@@ -235,7 +233,7 @@ class AgentRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=4000, description="User query")
     include_sources: bool = Field(default=False, description="Include validated resource citations")
     max_tokens: int = Field(
-        default=AGENT_MAX_TOKENS, ge=128, le=4096, description="Max response tokens"
+        default=settings.agent_max_tokens, ge=128, le=4096, description="Max response tokens"
     )
 
     model_config = {
